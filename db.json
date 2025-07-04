@@ -1,0 +1,227 @@
+{
+  "pickups": [
+    {
+      "id": "1751642259728",
+      "phone": "123456",
+      "date": "2024-12-20",
+      "timeSlot": "10–11 AM",
+      "address": "asd",
+      "mapLink": "",
+      "status": "Completed"
+    },
+    {
+      "id": "1751642381028",
+      "phone": "123456",
+      "date": "2023-12-02",
+      "timeSlot": "12–1 PM",
+      "address": "asd",
+      "mapLink": "",
+      "status": "Completed"
+    },
+    {
+      "id": "1751642464366",
+      "phone": "123456",
+      "date": "2024-12-12",
+      "timeSlot": "3–4 PM",
+      "address": "as",
+      "mapLink": "",
+      "status": "Completed"
+    },
+    {
+      "id": "1751643375928",
+      "phone": "123456",
+      "date": "2025-07-10",
+      "timeSlot": "10–11 AM",
+      "address": "asd",
+      "mapLink": "",
+      "status": "Completed"
+    },
+    {
+      "id": "1751643497504",
+      "phone": "123456",
+      "date": "2025-07-12",
+      "timeSlot": "12–1 PM",
+      "address": "lk",
+      "mapLink": "",
+      "status": "Completed"
+    },
+    {
+      "id": "1751644297160",
+      "phone": "12456",
+      "date": "1200-12-12",
+      "displayDate": "1200-12-12",
+      "timeSlot": "10–11 AM",
+      "address": "asd",
+      "mapLink": "",
+      "pickupCode": "444652",
+      "status": "Completed",
+      "items": [
+        {
+          "name": "asd",
+          "qty": 1,
+          "price": 12
+        }
+      ],
+      "totalAmount": 12
+    },
+    {
+      "id": "1751644675540",
+      "phone": "12456",
+      "date": "1212-12-12",
+      "displayDate": "1212-12-12",
+      "timeSlot": "3–4 PM",
+      "address": "asdas",
+      "mapLink": "",
+      "pickupCode": "952373",
+      "status": "Completed"
+    },
+    {
+      "id": "1751644792255",
+      "phone": "1245",
+      "date": "1212-12-12",
+      "displayDate": "1212-12-12",
+      "timeSlot": "10–11 AM",
+      "address": "asdasd",
+      "mapLink": "",
+      "pickupCode": "466272",
+      "status": "Completed",
+      "items": [
+        {
+          "name": "as",
+          "qty": 1,
+          "price": 123
+        },
+        {
+          "name": "12123",
+          "qty": 1,
+          "price": 2323
+        },
+        {
+          "name": "121",
+          "qty": 2,
+          "price": 22
+        }
+      ],
+      "totalAmount": 2490
+    },
+    {
+      "id": "1751645041356",
+      "phone": "1245",
+      "date": "9021-20-12",
+      "displayDate": "9021-20-12",
+      "timeSlot": "10–11 AM",
+      "address": "sds",
+      "mapLink": "",
+      "pickupCode": "360023",
+      "status": "Completed",
+      "items": [
+        {
+          "name": "21",
+          "qty": 2,
+          "price": 22
+        }
+      ],
+      "totalAmount": 44
+    },
+    {
+      "id": "1751645832031",
+      "phone": "1245",
+      "date": "2010-02-16",
+      "displayDate": "2010-02-16",
+      "timeSlot": "12–1 PM",
+      "address": "taruka",
+      "mapLink": "",
+      "pickupCode": "291042",
+      "status": "Completed",
+      "items": [
+        {
+          "name": "shirt",
+          "qty": 15,
+          "price": 20
+        },
+        {
+          "name": "crop-top",
+          "qty": 2,
+          "price": 23
+        }
+      ],
+      "totalAmount": 346
+    },
+    {
+      "id": "1751646391954",
+      "phone": "12355",
+      "date": "2025-07-10",
+      "displayDate": "2025-07-10",
+      "timeSlot": "10–11 AM",
+      "address": "Ssf",
+      "mapLink": "",
+      "pickupCode": "349007",
+      "status": "Completed",
+      "items": [
+        {
+          "name": "Er d",
+          "qty": 12,
+          "price": 1
+        }
+      ],
+      "totalAmount": 12
+    },
+    {
+      "id": "1751646883642",
+      "phone": "12355",
+      "date": "2025-07-01",
+      "displayDate": "2025-07-01",
+      "timeSlot": "3–4 PM",
+      "address": "We",
+      "mapLink": "",
+      "pickupCode": "786202",
+      "status": "Completed",
+      "items": [
+        {
+          "name": "Wee",
+          "qty": 1,
+          "price": 1
+        }
+      ],
+      "totalAmount": 1
+    },
+    {
+      "id": "1751647060131",
+      "phone": "12355",
+      "date": "2025-07-10",
+      "displayDate": "2025-07-10",
+      "timeSlot": "10–11 AM",
+      "address": "Sd",
+      "mapLink": "",
+      "pickupCode": "777674",
+      "status": "Completed",
+      "items": [
+        {
+          "name": "Wed",
+          "qty": 11,
+          "price": 12
+        }
+      ],
+      "totalAmount": 132
+    },
+    {
+      "id": "1751647200759",
+      "phone": "12355",
+      "date": "2025-07-10",
+      "displayDate": "2025-07-10",
+      "timeSlot": "10–11 AM",
+      "address": "Sft",
+      "mapLink": "",
+      "pickupCode": "796474",
+      "status": "Completed",
+      "items": [
+        {
+          "name": "Cgg",
+          "qty": 4,
+          "price": 456
+        }
+      ],
+      "totalAmount": 1824
+    }
+  ]
+}

@@ -5,57 +5,91 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  Alert,
   Linking
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 export default function Dashboard({ navigation }) {
   const [pickups, setPickups] = useState([]);
 
-  useEffect(() => {
-    const loadPickups = async () => {
-      const data = await AsyncStorage.getItem('customerPickups');
-      if (data) {
-        const allRequests = JSON.parse(data);
-        // Filter requests with status not "Completed"
-        const activeRequests = allRequests.filter(req => req.status !== 'Completed');
-        setPickups(activeRequests);
-      }
-    };
+  const fetchPickups = async () => {
+    try {
+      const response = await axios.get('http://192.168.1.5:3000/pickups');
+      const sorted = response.data.sort((a, b) => Number(b.id) - Number(a.id));
 
-    const unsubscribe = navigation.addListener('focus', loadPickups);
-    return unsubscribe;
-  }, [navigation]);
+      setPickups(sorted);
+    } catch (error) {
+      console.error('Failed to fetch pickups:', error.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchPickups(); 
+  
+    const interval = setInterval(() => {
+      fetchPickups(); 
+    }, 3000); 
+  
+    return () => clearInterval(interval); 
+  }, []);
+  
+
+  const markAsAccepted = async (item) => {
+    try {
+      await axios.patch(`http://192.168.1.5:3000/pickups/${item.id}`, {
+        status: 'Accepted'
+      });
+
+      Alert.alert('Success', `Pickup marked as 'Accepted'`);
+      fetchPickups();
+    } catch (error) {
+      console.error('Status update failed:', error.message);
+      Alert.alert('Error', 'Failed to update status.');
+    }
+  };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
       onPress={() => navigation.navigate('PickupDetails', { pickup: item })}
     >
-      <Text style={styles.title}>Customer: {item.name || 'N/A'}</Text>
-      <Text>Phone: {item.phone || 'N/A'}</Text>
+      <Text style={styles.title}>Pickup Date: {item.date || 'N/A'}</Text>
+      <Text>Time: {item.timeSlot}</Text>
       <Text>Address: {item.address}</Text>
-      <Text>Date: {item.date} | Time: {item.timeSlot}</Text>
       <Text>Status: {item.status}</Text>
-      {item.mapLink ? (
-        <Text
-          style={styles.link}
-          onPress={() => Linking.openURL(item.mapLink)}
-        >
+
+      {item.mapLink && (
+        <Text style={styles.link} onPress={() => Linking.openURL(item.mapLink)}>
           Open Map
         </Text>
-      ) : null}
+      )}
+
+      {item.status === 'Pending' ? (
+        <TouchableOpacity
+          style={styles.statusButton}
+          onPress={() => markAsAccepted(item)}
+        >
+          <Text style={styles.statusButtonText}>Mark as Accepted</Text>
+        </TouchableOpacity>
+      ) : (
+        <Text style={styles.infoText}>
+          Further action → Open Pickup Details
+        </Text>
+      )}
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Assigned Pickups</Text>
+      <Text style={styles.header}>All Pickup Requests</Text>
       <FlatList
         data={pickups}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        ListEmptyComponent={<Text style={styles.empty}>No assigned pickups yet.</Text>}
+        ListEmptyComponent={
+          <Text style={styles.empty}>No pickups available.</Text>
+        }
       />
     </View>
   );
@@ -89,5 +123,21 @@ const styles = StyleSheet.create({
     marginTop: 30,
     textAlign: 'center',
     fontSize: 16
+  },
+  statusButton: {
+    marginTop: 10,
+    backgroundColor: '#00796b',
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+  statusButtonText: {
+    color: '#fff',
+    fontWeight: 'bold'
+  },
+  infoText: {
+    marginTop: 10,
+    fontStyle: 'italic',
+    color: '#555'
   }
 });

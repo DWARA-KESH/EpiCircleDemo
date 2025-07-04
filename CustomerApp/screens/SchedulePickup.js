@@ -1,55 +1,107 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  Alert,
+  StyleSheet,
+  Platform,
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 export default function SchedulePickup({ navigation }) {
   const [date, setDate] = useState(new Date());
+  const [pickupDateText, setPickupDateText] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [timeSlot, setTimeSlot] = useState('');
   const [address, setAddress] = useState('');
   const [mapLink, setMapLink] = useState('');
+  const [phone, setPhone] = useState('');
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const userData = await AsyncStorage.getItem('user');
+      if (userData) {
+        const parsed = JSON.parse(userData);
+        setPhone(parsed.phone);
+      }
+    };
+    loadUser();
+  }, []);
 
   const handleSubmit = async () => {
-    if (!timeSlot || !address) {
+    if (!timeSlot || !address || (!date && !pickupDateText)) {
       Alert.alert('Missing fields', 'Please fill in all required fields.');
       return;
     }
 
-    const pickupId = Date.now().toString(); // unique ID
+    let formattedDate = '';
+    if (Platform.OS === 'web') {
+      formattedDate = pickupDateText;
+    } else {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      formattedDate = `${year}-${month}-${day}`;
+    }
+
+    const pickupCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+
     const pickup = {
-      id: pickupId,
-      date: date.toDateString(),
+      id: Date.now().toString(),
+      phone,
+      date: formattedDate,
+      displayDate: formattedDate,
       timeSlot,
       address,
       mapLink,
-      status: 'Pending',
+      pickupCode,
+      status: 'Pending'
     };
 
-    const existing = await AsyncStorage.getItem('customerPickups');
-    const updated = existing ? JSON.parse(existing) : [];
-    updated.push(pickup);
-    await AsyncStorage.setItem('customerPickups', JSON.stringify(updated));
-
-    Alert.alert('Success', 'Pickup scheduled successfully!');
-    navigation.goBack();
+    try {
+      await axios.post('http://192.168.1.5:3000/pickups', pickup);
+      Alert.alert('Success', 'Pickup scheduled successfully!');
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error posting pickup:', error.message);
+      Alert.alert('Error', 'Failed to schedule pickup.');
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Pickup Date</Text>
-      <Button title={date.toDateString()} onPress={() => setShowDatePicker(true)} />
-      {showDatePicker && (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowDatePicker(false);
-            if (selectedDate) setDate(selectedDate);
-          }}
+
+      {Platform.OS === 'web' ? (
+        <TextInput
+          value={pickupDateText}
+          onChangeText={setPickupDateText}
+          placeholder="YYYY-MM-DD"
+          style={styles.input}
         />
+      ) : (
+        <>
+          <Button
+            title={date.toDateString()}
+            onPress={() => setShowDatePicker(true)}
+          />
+          {showDatePicker && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                setShowDatePicker(false);
+                if (selectedDate) setDate(selectedDate);
+              }}
+            />
+          )}
+        </>
       )}
 
       <Text style={styles.label}>Time Slot</Text>
@@ -87,17 +139,17 @@ export default function SchedulePickup({ navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20
+    padding: 20,
   },
   label: {
     marginTop: 15,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   input: {
     borderWidth: 1,
     borderColor: '#aaa',
     padding: 10,
     borderRadius: 8,
-    marginBottom: 10
-  }
+    marginBottom: 10,
+  },
 });
