@@ -111,10 +111,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold'
   },
   card: {
-    backgroundColor: '#f2f2f2',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 12
+    backgroundColor: '#ffffff',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 14,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
   sectionTitle: {
     fontWeight: 'bold',
