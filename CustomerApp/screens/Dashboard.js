@@ -209,6 +209,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
     color: '#333',
+    paddingBottom: '20px'
   },
   subHeading: {
     fontSize: 20,

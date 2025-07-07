@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,6 @@ import {
   ScrollView,
   Dimensions,
   KeyboardAvoidingView,
-  StyleSheet
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
@@ -28,6 +27,7 @@ export default function SchedulePickup({ navigation }) {
   const [address, setAddress] = useState('');
   const [mapLink, setMapLink] = useState('');
   const [showTimeSlots, setShowTimeSlots] = useState(false);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   const showAlert = (title, message) => {
     if (Platform.OS === 'web') {
@@ -75,8 +75,13 @@ export default function SchedulePickup({ navigation }) {
 
     try {
       await axios.post('http://192.168.1.5:3000/pickups', pickup);
-      showAlert('Success', 'Pickup scheduled successfully!');
-      navigation.goBack();
+
+      if (Platform.OS === 'web') {
+        setSuccessModalVisible(true);
+      } else {
+        showAlert('Success', 'Pickup scheduled successfully!');
+        navigation.goBack();
+      }
     } catch (error) {
       console.error('Error posting pickup:', error.message);
       showAlert('Error', 'Failed to schedule pickup.');
@@ -123,30 +128,18 @@ export default function SchedulePickup({ navigation }) {
                 <Text style={{ fontSize: 15, color: '#000' }}>{date.toDateString()}</Text>
               </TouchableOpacity>
               {showDatePicker && (
-                <Modal transparent visible animationType="fade">
-                  <View style={modalOverlayStyle}>
-                    <View style={modalContentStyle}>
-                      <DateTimePicker
-                        value={date}
-                        mode="date"
-                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                        themeVariant="light"
-                        textColor="#000"
-                        onChange={(event, selectedDate) => {
-                          if (selectedDate) {
-                            setDate(selectedDate);
-                          }
-                        }}
-                      />
-                      <TouchableOpacity
-                        onPress={() => setShowDatePicker(false)}
-                        style={modalConfirmButtonStyle}
-                      >
-                        <Text style={modalConfirmTextStyle}>Confirm</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </Modal>
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  themeVariant="light"
+                  onChange={(event, selectedDate) => {
+                    setShowDatePicker(false);
+                    if (selectedDate) {
+                      setDate(selectedDate);
+                    }
+                  }}
+                />
               )}
             </>
           )}
@@ -192,6 +185,35 @@ export default function SchedulePickup({ navigation }) {
           </View>
         </View>
       </ScrollView>
+
+      {Platform.OS === 'web' && (
+        <Modal
+          transparent
+          visible={successModalVisible}
+          animationType="fade"
+          onRequestClose={() => setSuccessModalVisible(false)}
+        >
+          <View style={modalOverlayStyle}>
+            <View style={modalContentStyle}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: '#28a745' }}>
+                Pickup Scheduled!
+              </Text>
+              <Text style={{ fontSize: 15, textAlign: 'center', marginBottom: 20 }}>
+                Your pickup request has been successfully submitted.
+              </Text>
+              <TouchableOpacity
+                style={modalConfirmButtonStyle}
+                onPress={() => {
+                  setSuccessModalVisible(false);
+                  navigation.navigate('Dashboard');
+                }}
+              >
+                <Text style={modalConfirmTextStyle}>OK</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -203,7 +225,7 @@ const inputStyle = {
   borderRadius: 8,
   marginBottom: 10,
   fontSize: 15,
-  backgroundColor: '#fff'
+  backgroundColor: '#fff',
 };
 
 const modalOverlayStyle = {
