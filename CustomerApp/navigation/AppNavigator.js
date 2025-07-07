@@ -16,7 +16,14 @@ export default function AppNavigator() {
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="OTP" component={OTPScreen} />
-        <Stack.Screen name="Dashboard" component={Dashboard} />
+        <Stack.Screen
+          name="Dashboard"
+          component={Dashboard}
+          options={{
+            headerShown: false,
+            gestureEnabled: false
+          }}
+        />
         <Stack.Screen name="SchedulePickup" component={SchedulePickup} />
         <Stack.Screen name="OrderHistory" component={OrderHistory} />
       </Stack.Navigator>

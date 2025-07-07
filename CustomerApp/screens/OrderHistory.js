@@ -1,35 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   View,
   Text,
   FlatList,
-  StyleSheet,
   Button,
-  Alert
+  Alert,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { UserContext } from '../context/UserContext';
+
+const { height } = Dimensions.get('window');
 
 export default function OrderHistory() {
+  const { userPhone } = useContext(UserContext);
   const [pickups, setPickups] = useState([]);
-  const [phone, setPhone] = useState('');
 
   useEffect(() => {
     let interval;
 
     const loadOrders = async () => {
       try {
-        const userData = await AsyncStorage.getItem('user');
-        if (!userData) return;
-
-        const { phone } = JSON.parse(userData);
-        setPhone(phone);
-
         const res = await axios.get('http://192.168.1.5:3000/pickups');
         const userOrders = res.data
-          .filter(item => item.phone === phone)
-          .sort((a, b) => Number(b.id) - Number(a.id)); // Most recent first
-
+          .filter(item => item.phone === userPhone)
+          .sort((a, b) => Number(b.id) - Number(a.id));
         setPickups(userOrders);
       } catch (err) {
         console.error('Error loading orders:', err.message);
@@ -37,10 +33,10 @@ export default function OrderHistory() {
     };
 
     loadOrders();
-    interval = setInterval(loadOrders, 3000); // ⏱️ Poll every 3 seconds
+    interval = setInterval(loadOrders, 3000);
 
-    return () => clearInterval(interval); // Cleanup
-  }, []);
+    return () => clearInterval(interval);
+  }, [userPhone]);
 
   const approveOrder = async (id) => {
     try {
@@ -60,78 +56,77 @@ export default function OrderHistory() {
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.card}>
+    <View
+      style={{
+        backgroundColor: '#ffffff',
+        padding: 16,
+        borderRadius: 14,
+        marginBottom: 14,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 3 },
+        elevation: 4,
+      }}
+    >
       <Text>Date: {item.date}</Text>
       <Text>Time: {item.timeSlot}</Text>
       <Text>Address: {item.address}</Text>
       <Text>Status: {item.status}</Text>
 
       {item.status === 'Accepted' && (
-        <Text style={styles.code}>Pickup Code: {item.id.slice(-6)}</Text>
+        <Text style={{ marginTop: 6, fontStyle: 'italic', color: '#333' }}>
+          Pickup Code: {item.id.slice(-6)}
+        </Text>
       )}
 
       {item.status === 'Pending for Approval' && (
         <>
-          <Text style={styles.sectionTitle}>Items:</Text>
+          <Text style={{ fontWeight: 'bold', marginTop: 8 }}>Items:</Text>
           {item.items?.map((itm, idx) => (
             <Text key={idx}>- {itm.name} x{itm.qty} @ ₹{itm.price}</Text>
           ))}
-          <Text style={styles.total}>Total: ₹{item.totalAmount}</Text>
-          <Button title="Approve Order" onPress={() => approveOrder(item.id)} />
+          <Text style={{ fontWeight: 'bold', marginTop: 6 }}>Total: ₹{item.totalAmount}</Text>
+          <View style={{ marginTop: 10 }}>
+            <Button title="Approve Order" onPress={() => approveOrder(item.id)} color="#28a745" />
+          </View>
         </>
       )}
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Order History</Text>
-      {pickups.length === 0 ? (
-        <Text>No pickups scheduled yet.</Text>
-      ) : (
-        <FlatList
-          data={pickups}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-        />
-      )}
-    </View>
+    <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        minHeight: height,
+        backgroundColor: '#f1f5f9',
+        padding: 20,
+        alignItems: 'center'
+      }}
+    >
+      <View style={{ width: '100%', maxWidth: 400 }}>
+        <Text style={{
+          fontSize: 24,
+          marginBottom: 16,
+          textAlign: 'center',
+          fontWeight: 'bold',
+          color: '#0077b6'
+        }}>Order History</Text>
+
+        {pickups.length === 0 ? (
+          <Text style={{ textAlign: 'center', fontSize: 16, color: '#555' }}>
+            No pickups scheduled yet.
+          </Text>
+        ) : (
+          <FlatList
+            data={pickups}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            scrollEnabled={false}
+          />
+        )}
+      </View>
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16
-  },
-  title: {
-    fontSize: 22,
-    marginBottom: 10,
-    textAlign: 'center',
-    fontWeight: 'bold'
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 14,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontWeight: 'bold',
-    marginTop: 8
-  },
-  total: {
-    fontWeight: 'bold',
-    marginTop: 6
-  },
-  code: {
-    color: '#333',
-    marginTop: 6,
-    fontStyle: 'italic'
-  }
-});

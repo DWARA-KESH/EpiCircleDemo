@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -7,17 +7,20 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  Alert
 } from 'react-native';
+import { UserContext } from '../context/UserContext';
+import { showAlert } from '../Utilities/alertHelper';
 
 export default function LoginScreen({ navigation }) {
   const [phone, setPhone] = useState('');
+  const { setUserPhone } = useContext(UserContext);
 
   const handleLogin = () => {
     if (phone.length < 10) {
-      Alert.alert('Enter valid Phone Number to continue')
-    } else{
-    navigation.navigate('OTP', { phone });
+      showAlert('Invalid Input', 'Enter a valid Phone Number to continue');
+    } else {
+      setUserPhone(phone);
+      navigation.navigate('OTP');
     }
   };
 
@@ -35,8 +38,13 @@ export default function LoginScreen({ navigation }) {
           placeholder="Enter phone number"
           keyboardType="phone-pad"
           value={phone}
-          onChangeText={setPhone}
+          onChangeText={(text) => {
+            const numericText = text.replace(/[^0-9]/g, '');
+            setPhone(numericText);
+          }}
           maxLength={10}
+          returnKeyType="done"
+          onSubmitEditing={handleLogin}
         />
 
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
