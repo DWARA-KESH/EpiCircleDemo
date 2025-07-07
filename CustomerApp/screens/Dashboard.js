@@ -8,9 +8,10 @@ import {
   Pressable,
   ScrollView,
   BackHandler,
-  Alert,
+  Modal,
+  Dimensions,
   Platform,
-  Dimensions
+  Alert,
 } from 'react-native';
 import axios from 'axios';
 import { useFocusEffect } from '@react-navigation/native';
@@ -21,13 +22,39 @@ const { height } = Dimensions.get('window');
 export default function Dashboard({ navigation }) {
   const { userPhone, logout } = useContext(UserContext);
   const [recentPickups, setRecentPickups] = useState([]);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogout = async () => {
+  const performLogout = async () => {
     await logout();
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Login' }],
-    });
+  
+    if (Platform.OS === 'web') {
+      window.location.replace('/');
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+    }
+  };
+
+  const confirmAndLogout = () => {
+    if (Platform.OS !== 'web') {
+      Alert.alert('Logout?', 'Are you sure you want to logout?', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: performLogout,
+        },
+      ]);
+    } else {
+      setShowLogoutModal(true);
+    }
+  };
+
+  const handleModalLogout = () => {
+    setShowLogoutModal(false);
+    performLogout();
   };
 
   useEffect(() => {
@@ -39,7 +66,6 @@ export default function Dashboard({ navigation }) {
         const sorted = res.data
           .filter(item => item.phone === userPhone)
           .sort((a, b) => Number(b.id) - Number(a.id));
-
         setRecentPickups(sorted.slice(0, 2));
       } catch (err) {
         console.error('Error loading dashboard data:', err.message);
@@ -60,42 +86,26 @@ export default function Dashboard({ navigation }) {
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
-        if (Platform.OS === 'web') {
-          const confirmed = window.confirm('Do you want to logout?');
-          if (confirmed) {
-            handleLogout();
-          }
-        } else {
-          Alert.alert('Logout?', 'Do you want to logout?', [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Logout', onPress: handleLogout },
-          ]);
-        }
+        confirmAndLogout();
         return true;
       };
 
-      const webBackHandler = navigation.addListener('beforeRemove', (e) => {
+      const backHandler = Platform.OS !== 'web'
+        ? BackHandler.addEventListener('hardwareBackPress', onBackPress)
+        : null;
+
+      const unsubscribe = navigation.addListener('beforeRemove', (e) => {
         if (Platform.OS === 'web') {
           e.preventDefault();
-          const confirmed = window.confirm('Do you want to logout?');
-          if (confirmed) {
-            handleLogout();
-          }
+          setShowLogoutModal(true);
         }
       });
 
-      let backHandler;
-      if (Platform.OS !== 'web') {
-        backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      }
-
       return () => {
-        if (Platform.OS !== 'web' && backHandler) {
-          backHandler.remove();
-        }
-        webBackHandler();
+        if (backHandler) backHandler.remove();
+        unsubscribe();
       };
-    }, [handleLogout, navigation])
+    }, [])
   );
 
   const renderItem = ({ item }) => (
@@ -110,44 +120,70 @@ export default function Dashboard({ navigation }) {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <View style={styles.innerContainer}>
-        <View style={styles.contentWrapper}>
-          <Text style={styles.welcome}>Welcome, {userPhone || 'Customer'} 👋</Text>
+    <>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.innerContainer}>
+          <View style={styles.contentWrapper}>
+            <Text style={styles.welcome}>Welcome, {userPhone || 'Customer'} 👋</Text>
 
-          <Pressable style={styles.button} onPress={() => navigation.navigate('SchedulePickup')}>
-            <Text style={styles.buttonText}>Schedule New Pickup</Text>
-          </Pressable>
+            <Pressable style={styles.button} onPress={() => navigation.navigate('SchedulePickup')}>
+              <Text style={styles.buttonText}>Schedule New Pickup</Text>
+            </Pressable>
 
-          <Pressable
-            style={[styles.button, { backgroundColor: '#6c757d' }]}
-            onPress={() => navigation.navigate('OrderHistory')}
-          >
-            <Text style={styles.buttonText}>View Full Order History</Text>
-          </Pressable>
+            <Pressable
+              style={[styles.button, { backgroundColor: '#6c757d' }]}
+              onPress={() => navigation.navigate('OrderHistory')}
+            >
+              <Text style={styles.buttonText}>View Full Order History</Text>
+            </Pressable>
 
-          <Pressable
-            style={[styles.button, { backgroundColor: '#dc3545' }]}
-            onPress={handleLogout}
-          >
-            <Text style={styles.buttonText}>Logout</Text>
-          </Pressable>
+            <Pressable
+              style={[styles.button, { backgroundColor: '#dc3545' }]}
+              onPress={confirmAndLogout}
+            >
+              <Text style={styles.buttonText}>Logout</Text>
+            </Pressable>
 
-          <Text style={styles.subHeading}>Recent Pickups</Text>
+            <Text style={styles.subHeading}>Recent Pickups</Text>
 
-          {recentPickups.length === 0 ? (
-            <Text style={styles.noData}>No recent pickups found.</Text>
-          ) : (
-            <FlatList
-              data={recentPickups}
-              keyExtractor={(item) => item.id}
-              renderItem={renderItem}
-              scrollEnabled={false}
-            />
-          )}
+            {recentPickups.length === 0 ? (
+              <Text style={styles.noData}>No recent pickups found.</Text>
+            ) : (
+              <FlatList
+                data={recentPickups}
+                keyExtractor={(item) => item.id}
+                renderItem={renderItem}
+                scrollEnabled={false}
+              />
+            )}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+
+      {/* Web Logout Modal */}
+      <Modal
+        transparent
+        visible={showLogoutModal}
+        animationType="fade"
+        onRequestClose={() => setShowLogoutModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Confirm Logout</Text>
+            <Text style={styles.modalMessage}>Are you sure you want to logout?</Text>
+
+            <View style={styles.modalButtons}>
+              <Pressable style={styles.cancelBtn} onPress={() => setShowLogoutModal(false)}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </Pressable>
+              <Pressable style={styles.confirmBtn} onPress={handleModalLogout}>
+                <Text style={styles.confirmText}>Logout</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
 
@@ -222,5 +258,58 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 15,
     marginTop: 10,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: 300,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 24,
+    alignItems: 'center',
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  cancelBtn: {
+    backgroundColor: '#6c757d',
+    paddingVertical: 10,
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 10,
+    alignItems: 'center',
+  },
+  confirmBtn: {
+    backgroundColor: '#dc3545',
+    paddingVertical: 10,
+    borderRadius: 8,
+    flex: 1,
+    alignItems: 'center',
+  },
+  cancelText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  confirmText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
