@@ -21,6 +21,7 @@ const { height } = Dimensions.get('window');
 export default function SchedulePickup({ navigation }) {
   const { userPhone } = useContext(UserContext);
   const [date, setDate] = useState(new Date());
+  const [tempDate, setTempDate] = useState(new Date());
   const [pickupDateText, setPickupDateText] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [timeSlot, setTimeSlot] = useState('');
@@ -100,51 +101,90 @@ export default function SchedulePickup({ navigation }) {
           flexGrow: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: '#f8fafc',
+          backgroundColor: '#f9f1f0',
           paddingBottom: 100,
           paddingLeft: 20,
           paddingRight: 20,
         }}
-        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         <View style={{ width: '100%', maxWidth: 400 }}>
-          <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#0077b6' }}>
-            Schedule Your Pickup
-          </Text>
+          <Text style={heading}>Schedule Your Pickup</Text>
 
-          <Text style={{ marginTop: 15, fontWeight: 'bold', fontSize: 16, color: '#333' }}>Pickup Date</Text>
+          <Text style={label}>Pickup Date</Text>
 
+          {/* Date Picker by Platform */}
           {Platform.OS === 'web' ? (
             <TextInput
               value={pickupDateText}
               onChangeText={setPickupDateText}
               placeholder="YYYY-MM-DD"
+              placeholderTextColor="#aaa"
               style={inputStyle}
             />
-          ) : (
+          ) : Platform.OS === 'android' ? (
             <>
-              <TouchableOpacity onPress={() => setShowDatePicker(true)} style={inputStyle}>
-                <Text style={{ fontSize: 15, color: '#000' }}>{date.toDateString()}</Text>
+              <TouchableOpacity
+                onPress={() => setShowDatePicker(true)}
+                style={inputStyle}
+              >
+                <Text style={{ fontSize: 15, color: '#333' }}>{date.toDateString()}</Text>
               </TouchableOpacity>
               {showDatePicker && (
                 <DateTimePicker
                   value={date}
                   mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  themeVariant="light"
+                  display="default"
                   onChange={(event, selectedDate) => {
-                    setShowDatePicker(false);
                     if (selectedDate) {
                       setDate(selectedDate);
                     }
+                    setShowDatePicker(false);
                   }}
                 />
               )}
             </>
+          ) : (
+            <>
+              <TouchableOpacity
+                onPress={() => {
+                  setTempDate(date);
+                  setShowDatePicker(true);
+                }}
+                style={inputStyle}
+              >
+                <Text style={{ fontSize: 15, color: '#333' }}>{date.toDateString()}</Text>
+              </TouchableOpacity>
+              <Modal visible={showDatePicker} transparent animationType="slide">
+                <View style={modalOverlayStyle}>
+                  <View style={modalContentStyle}>
+                    <DateTimePicker
+                      value={tempDate}
+                      mode="date"
+                      display="spinner"
+                      onChange={(event, selectedDate) => {
+                        if (selectedDate) {
+                          setTempDate(selectedDate);
+                        }
+                      }}
+                      themeVariant="light"
+                    />
+                    <TouchableOpacity
+                      onPress={() => {
+                        setDate(tempDate);
+                        setShowDatePicker(false);
+                      }}
+                      style={modalConfirmButtonStyle}
+                    >
+                      <Text style={modalConfirmTextStyle}>OK</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </Modal>
+            </>
           )}
 
-          <Text style={{ marginTop: 15, fontWeight: 'bold', fontSize: 16, color: '#333' }}>Time Slot</Text>
+          <Text style={label}>Time Slot</Text>
           <TouchableOpacity style={inputStyle} onPress={() => setShowTimeSlots(true)}>
             <Text>{timeSlot || 'Select time slot'}</Text>
           </TouchableOpacity>
@@ -152,9 +192,15 @@ export default function SchedulePickup({ navigation }) {
           <Modal visible={showTimeSlots} transparent animationType="fade">
             <View style={modalOverlayStyle}>
               <View style={modalContentStyle}>
-                {timeOptions.map(slot => (
-                  <TouchableOpacity key={slot} onPress={() => { setTimeSlot(slot); setShowTimeSlots(false); }}>
-                    <Text style={{ fontSize: 16, paddingVertical: 10, color: '#007bff' }}>{slot}</Text>
+                {timeOptions.map((slot) => (
+                  <TouchableOpacity
+                    key={slot}
+                    onPress={() => {
+                      setTimeSlot(slot);
+                      setShowTimeSlots(false);
+                    }}
+                  >
+                    <Text style={{ fontSize: 16, paddingVertical: 10, color: '#f79489' }}>{slot}</Text>
                   </TouchableOpacity>
                 ))}
                 <TouchableOpacity onPress={() => setShowTimeSlots(false)}>
@@ -164,28 +210,31 @@ export default function SchedulePickup({ navigation }) {
             </View>
           </Modal>
 
-          <Text style={{ marginTop: 15, fontWeight: 'bold', fontSize: 16, color: '#333' }}>Address</Text>
+          <Text style={label}>Address</Text>
           <TextInput
             style={inputStyle}
             value={address}
             onChangeText={setAddress}
             placeholder="Enter address"
+            placeholderTextColor="#aaa"
           />
 
-          <Text style={{ marginTop: 15, fontWeight: 'bold', fontSize: 16, color: '#333' }}>Google Map Link (optional)</Text>
+          <Text style={label}>Google Map Link (optional)</Text>
           <TextInput
             style={inputStyle}
             value={mapLink}
             onChangeText={setMapLink}
             placeholder="Paste Google Maps link"
+            placeholderTextColor="#aaa"
           />
 
           <View style={{ marginTop: 20 }}>
-            <Button title="Submit Pickup Request" onPress={handleSubmit} color="#28a745" />
+            <Button title="Submit Pickup Request" onPress={handleSubmit} color="#f79489" />
           </View>
         </View>
       </ScrollView>
 
+      {/* Success Modal for Web */}
       {Platform.OS === 'web' && (
         <Modal
           transparent
@@ -218,14 +267,38 @@ export default function SchedulePickup({ navigation }) {
   );
 }
 
+// 💄 Styles
+const heading = {
+  fontSize: 24,
+  fontWeight: 'bold',
+  textAlign: 'center',
+  marginBottom: 20,
+  color: '#f8afa6',
+};
+
+const label = {
+  marginTop: 15,
+  fontWeight: 'bold',
+  fontSize: 16,
+  color: '#333',
+};
+
 const inputStyle = {
   borderWidth: 1,
-  borderColor: '#ccc',
-  padding: 10,
-  borderRadius: 8,
-  marginBottom: 10,
+  borderColor: '#fadcd9',
+  paddingVertical: 12,
+  paddingHorizontal: 14,
+  borderRadius: 12,
+  marginBottom: 12,
   fontSize: 15,
+  fontWeight: '500',
   backgroundColor: '#fff',
+  color: '#333',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.05,
+  shadowRadius: 2,
+  elevation: 2,
 };
 
 const modalOverlayStyle = {
@@ -247,7 +320,7 @@ const modalConfirmButtonStyle = {
   marginTop: 20,
   paddingVertical: 10,
   paddingHorizontal: 20,
-  backgroundColor: '#007bff',
+  backgroundColor: '#f79489',
   borderRadius: 6,
 };
 

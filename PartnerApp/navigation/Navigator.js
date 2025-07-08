@@ -20,23 +20,64 @@ export default function AppNavigator() {
       </View>
     );
   }
+
   console.log('Navigator:', { isVerified, loading });
+
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#fadcd9', // Rose Quartz
+          },
+          headerTintColor: '#3a2e2e', // Dark text for icons
+          headerTitleStyle: {
+            fontWeight: 'normal',
+            fontSize: 20,
+            color: '#3a2e2e', // Dark text for title
+          },
+          contentStyle: {
+            backgroundColor: '#f9f1f0', // Light Cream Pink background for screens
+          },
+        }}
+      >
         {isVerified ? (
           <>
-            <Stack.Screen name="Dashboard" component={Dashboard} options={{ headerShown: false, gestureEnabled: false }}/>
+            <Stack.Screen
+              name="Dashboard"
+              component={Dashboard}
+              options={{
+                headerShown: false,
+                gestureEnabled: false,
+              }}
+            />
             <Stack.Screen
               name="PickupDetails"
               component={PickupDetails}
-              options={{ headerShown: true }}
+              options={{
+                title: 'Pickup Details',
+                headerShown: true,
+              }}
             />
           </>
         ) : (
           <>
-            <Stack.Screen name="Login" component={LoginScreen} options={{ headerBackVisible: false, gestureEnabled: false }}/>
-            <Stack.Screen name="OTP" component={OTPScreen} />
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{
+                title: 'Login',
+                headerBackVisible: false,
+                gestureEnabled: false,
+              }}
+            />
+            <Stack.Screen
+              name="OTP"
+              component={OTPScreen}
+              options={{
+                title: 'Verify',
+              }}
+            />
           </>
         )}
       </Stack.Navigator>

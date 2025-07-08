@@ -71,10 +71,13 @@ export default function PickupDetails({ route }) {
   };
 
   useEffect(() => {
-    if (status === 'In-Process') return;
-    const interval = setInterval(fetchUpdatedPickup, 5000);
+    const interval = setInterval(() => {
+      if (status !== 'In-Process') {
+        fetchUpdatedPickup();
+      }
+    }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [status]);
 
   const updatePickup = async (newStatus, extraData = {}) => {
     try {
@@ -179,30 +182,20 @@ export default function PickupDetails({ route }) {
           <Text style={styles.title}>Pickup Details</Text>
 
           <View style={styles.section}>
-            <Text style={styles.detail}>
-              📅 Pickup Date: {pickup.date || 'N/A'}
-            </Text>
-
-            <Text style={styles.detail}>
-              🕐 Time: {pickup.timeSlot || 'N/A'}
-            </Text>
-
-            <Text style={styles.detail}>
-              📍 Address: {pickup.address || 'N/A'}
-            </Text>
-
+            <Text style={styles.detail}>📅 Pickup Date: {pickup.date || 'N/A'}</Text>
+            <Text style={styles.detail}>🕐 Time: {pickup.timeSlot || 'N/A'}</Text>
+            <Text style={styles.detail}>📍 Address: {pickup.address || 'N/A'}</Text>
             <Text style={styles.detail}>
               🔄 Status:{' '}
               <Text style={{ fontWeight: 'bold', color: statusColorMap[status] || '#000' }}>
                 {status}
               </Text>
             </Text>
-
-            {pickup.mapLink ? (
+            {pickup.mapLink && (
               <Text style={styles.mapLink} onPress={() => Linking.openURL(pickup.mapLink)}>
                 🔗 Open Map
               </Text>
-            ) : null}
+            )}
           </View>
 
           {status === 'Pending' && (
@@ -298,36 +291,36 @@ export default function PickupDetails({ route }) {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f9f1f0', // Light Cream Pink
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
-    color: '#333',
+    color: '#3a2e2e',
   },
   section: {
     marginBottom: 24,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: '#f8afa6',
   },
   detail: {
     fontSize: 16,
     marginBottom: 4,
-    color: '#444',
+    color: '#3a2e2e',
   },
   mapLink: {
-    color: '#1e88e5',
+    color: '#007bff',
     textDecorationLine: 'underline',
     marginTop: 8,
     fontSize: 15,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 10,
+    borderColor: '#f8afa6',
+    padding: 12,
     marginBottom: 10,
     borderRadius: 8,
     backgroundColor: '#fff',
@@ -339,100 +332,98 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 8,
     borderRadius: 10,
-    backgroundColor: '#fff',
-    borderColor: '#ddd',
+    backgroundColor: '#fadcd9',
+    borderColor: '#f8afa6',
     borderWidth: 1,
   },
   itemName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#3a2e2e',
   },
   itemDetails: {
     fontSize: 14,
-    color: '#555',
+    color: '#3a2e2e',
     marginTop: 2,
   },
   deleteButton: {
-    backgroundColor: '#eee',
+    backgroundColor: '#f8afa6',
     borderRadius: 6,
     padding: 6,
-    borderWidth: 1,
-    borderColor: '#ccc',
   },
   deleteX: {
-    color: '#222',
+    color: '#3a2e2e',
     fontSize: 16,
     fontWeight: 'bold',
   },
   itemText: {
     fontSize: 15,
-    color: '#333',
+    color: '#3a2e2e',
     marginBottom: 4,
   },
   subTitle: {
     fontWeight: 'bold',
     fontSize: 17,
     marginBottom: 6,
-    color: '#111',
+    color: '#3a2e2e',
   },
   totalText: {
     fontWeight: 'bold',
     fontSize: 16,
     marginTop: 6,
-    color: '#0a0a0a',
+    color: '#3a2e2e',
   },
   codeText: {
     fontSize: 16,
     marginBottom: 10,
+    color: '#3a2e2e',
   },
   codeBold: {
     fontWeight: 'bold',
-    color: '#222',
+    color: '#3a2e2e',
   },
   addButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#f8afa6',
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 12,
   },
   addButtonText: {
-    color: 'white',
+    color: '#3a2e2e',
     fontWeight: 'bold',
     fontSize: 16,
   },
   submitButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#f79489', // Coral
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
   },
   submitButtonText: {
-    color: 'white',
+    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },
   primaryButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#f8afa6',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 10,
   },
   primaryButtonText: {
-    color: 'white',
+    color: '#3a2e2e',
     fontWeight: 'bold',
     fontSize: 16,
   },
   summaryCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fadcd9',
     padding: 15,
     borderRadius: 10,
-    elevation: 2,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#f8afa6',
   },
   modalBackdrop: {
     flex: 1,
@@ -446,22 +437,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: '80%',
     alignItems: 'center',
-    elevation: 5,
   },
   modalTitle: {
     fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 8,
-    color: '#333',
+    color: '#3a2e2e',
   },
   modalMessage: {
     fontSize: 16,
-    color: '#555',
+    color: '#3a2e2e',
     marginBottom: 20,
     textAlign: 'center',
   },
   modalButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#f79489',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,

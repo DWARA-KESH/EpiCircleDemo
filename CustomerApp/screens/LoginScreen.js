@@ -7,16 +7,18 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 import { UserContext } from '../context/UserContext';
+import { useNavigation } from '@react-navigation/native';
 
 const { height } = Dimensions.get('window');
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen() {
   const [phone, setPhone] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const { setUserPhone } = useContext(UserContext);
+  const navigation = useNavigation();
 
   const handleLogin = () => {
     if (phone.length !== 10) {
@@ -66,7 +68,7 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f9f1f0', // Light Cream Pink
   },
   innerContainer: {
     flex: 1,
@@ -77,50 +79,58 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 380,
-    backgroundColor: '#fff',
+    backgroundColor: '#fadcd9', // Rose Quartz
     padding: 30,
     borderRadius: 16,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 6,
+    elevation: 5,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
+    color: '#3a2e2e',
     textAlign: 'center',
-    marginBottom: 10
+    marginBottom: 10,
   },
   subtitle: {
     fontSize: 15,
-    color: '#555',
+    color: '#3a2e2e',
     textAlign: 'center',
-    marginBottom: 20
+    marginBottom: 20,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
+    backgroundColor: '#fff',
+    borderWidth: 1.2,
+    borderColor: '#f8afa6', // Dusty Rose
     borderRadius: 10,
     padding: 12,
     fontSize: 16,
-    marginBottom: 10
+    marginBottom: 10,
+    color: '#3a2e2e',
   },
   error: {
-    color: '#dc3545',
+    color: '#cc0000',
     fontSize: 14,
     marginBottom: 12,
     textAlign: 'center',
   },
   button: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#f79489', // Coral
     paddingVertical: 14,
     borderRadius: 10,
-    alignItems: 'center'
+    alignItems: 'center',
+    shadowColor: '#f79489',
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16
-  }
+    fontSize: 16,
+  },
 });

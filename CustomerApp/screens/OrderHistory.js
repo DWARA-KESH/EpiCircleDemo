@@ -3,10 +3,10 @@ import {
   View,
   Text,
   FlatList,
-  Button,
   Alert,
   ScrollView,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import axios from 'axios';
 import { UserContext } from '../context/UserContext';
@@ -58,7 +58,7 @@ export default function OrderHistory() {
   const renderItem = ({ item }) => (
     <View
       style={{
-        backgroundColor: '#ffffff',
+        backgroundColor: '#fadcd9',
         padding: 16,
         borderRadius: 14,
         marginBottom: 14,
@@ -69,27 +69,43 @@ export default function OrderHistory() {
         elevation: 4,
       }}
     >
-      <Text>Date: {item.date}</Text>
-      <Text>Time: {item.timeSlot}</Text>
-      <Text>Address: {item.address}</Text>
-      <Text>Status: {item.status}</Text>
+      <Text style={{ color: '#3a2e2e', marginBottom: 4 }}>📅 Date: {item.date}</Text>
+      <Text style={{ color: '#3a2e2e', marginBottom: 4 }}>🕐 Time: {item.timeSlot}</Text>
+      <Text style={{ color: '#3a2e2e', marginBottom: 4 }}>📍 Address: {item.address}</Text>
+      <Text style={{ color: '#3a2e2e', fontWeight: 'bold' }}>📦 Status: {item.status}</Text>
 
       {item.status === 'Accepted' && (
-        <Text style={{ marginTop: 6, fontStyle: 'italic', color: '#333' }}>
+        <Text style={{ marginTop: 6, fontStyle: 'italic', color: '#3a2e2e' }}>
           Pickup Code: {item.id.slice(-6)}
         </Text>
       )}
 
-      {item.status === 'Pending for Approval' && (
+      {(item.status === 'Pending for Approval' || item.status === 'Completed') && (
         <>
-          <Text style={{ fontWeight: 'bold', marginTop: 8 }}>Items:</Text>
+          <Text style={{ fontWeight: 'bold', marginTop: 10, color: '#3a2e2e' }}>Items:</Text>
           {item.items?.map((itm, idx) => (
-            <Text key={idx}>- {itm.name} x{itm.qty} @ ₹{itm.price}</Text>
+            <Text key={idx} style={{ color: '#3a2e2e' }}>
+              • {itm.name} × {itm.qty} @ ₹{itm.price}
+            </Text>
           ))}
-          <Text style={{ fontWeight: 'bold', marginTop: 6 }}>Total: ₹{item.totalAmount}</Text>
-          <View style={{ marginTop: 10 }}>
-            <Button title="Approve Order" onPress={() => approveOrder(item.id)} color="#28a745" />
-          </View>
+          <Text style={{ fontWeight: 'bold', marginTop: 6, color: '#3a2e2e' }}>
+            Total: ₹{item.totalAmount}
+          </Text>
+
+          {item.status === 'Pending for Approval' && (
+            <TouchableOpacity
+              onPress={() => approveOrder(item.id)}
+              style={{
+                marginTop: 12,
+                backgroundColor: '#f79489',
+                paddingVertical: 10,
+                borderRadius: 8,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Approve Order</Text>
+            </TouchableOpacity>
+          )}
         </>
       )}
     </View>
@@ -100,7 +116,7 @@ export default function OrderHistory() {
       contentContainerStyle={{
         flexGrow: 1,
         minHeight: height,
-        backgroundColor: '#f1f5f9',
+        backgroundColor: '#f9f1f0',
         padding: 20,
         alignItems: 'center'
       }}
@@ -111,8 +127,10 @@ export default function OrderHistory() {
           marginBottom: 16,
           textAlign: 'center',
           fontWeight: 'bold',
-          color: '#0077b6'
-        }}>Order History</Text>
+          color: '#f8afa6' // Dusty Rose
+        }}>
+          Order History
+        </Text>
 
         {pickups.length === 0 ? (
           <Text style={{ textAlign: 'center', fontSize: 16, color: '#555' }}>

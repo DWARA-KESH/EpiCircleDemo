@@ -14,20 +14,27 @@ const Stack = createNativeStackNavigator();
 export default function AppNavigator({ isVerified }) {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={isVerified ? 'Dashboard' : 'Login'}>
+      <Stack.Navigator initialRouteName={isVerified ? 'Dashboard' : 'Login'} screenOptions={{
+         headerStyle: { backgroundColor: '#fadcd9' }, // Rose Quartz
+         headerTintColor: '#3a2e2e', // deep brown
+         headerTitleAlign: 'center',
+         headerShadowVisible: false,
+      }}>
         <Stack.Screen
           name="Login"
           component={LoginScreen}
-          options={{ headerBackVisible: false, gestureEnabled: false }}
+          options={{ headerBackVisible: false, gestureEnabled: false ,
+            title: '',
+            headerShadowVisible: false}}
         />
-        <Stack.Screen name="OTP" component={OTPScreen} />
+        <Stack.Screen name="OTP" component={OTPScreen} options={{title: 'Verify', headerShadowVisible: false}}/>
         <Stack.Screen
           name="Dashboard"
           component={Dashboard}
           options={{ headerShown: false, gestureEnabled: false }}
         />
-        <Stack.Screen name="SchedulePickup" component={SchedulePickup} />
-        <Stack.Screen name="OrderHistory" component={OrderHistory} />
+        <Stack.Screen name="SchedulePickup" component={SchedulePickup} options={{title: ''}}/>
+        <Stack.Screen name="OrderHistory" component={OrderHistory} options={{title: ''}} />
       </Stack.Navigator>
     </NavigationContainer>
   );

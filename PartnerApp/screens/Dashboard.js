@@ -18,8 +18,8 @@ import axios from 'axios';
 import { PartnerContext } from '../context/PartnerContext';
 
 const { height } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
 
-// Custom logout modal for web
 function LogoutModal({ visible, onConfirm, onCancel }) {
   return (
     <Modal transparent visible={visible} animationType="fade">
@@ -47,31 +47,30 @@ export default function Dashboard({ navigation }) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { logout } = useContext(PartnerContext);
 
+  const showAlert = (title, message) => {
+    if (isWeb) {
+      setAlert({ visible: true, title, message });
+    } else {
+      Alert.alert(title, message);
+    }
+  };
+
   const fetchPickups = async () => {
     try {
       const response = await axios.get('http://192.168.1.5:3000/pickups');
       const sorted = response.data.sort((a, b) => b.id - a.id);
       setPickups(sorted);
     } catch (err) {
-      setAlert({ visible: true, title: 'Error', message: 'Failed to fetch pickups.' });
+      showAlert('Error', 'Failed to fetch pickups.');
     }
   };
 
   const performLogout = async () => {
     await logout();
-
-    // if (Platform.OS === 'web') {
-    //   window.location.replace('/');
-    // } else {
-    //   navigation.reset({
-    //     index: 0,
-    //     routes: [{ name: 'Login' }],
-    //   });
-    // }
   };
 
   const confirmLogout = () => {
-    if (Platform.OS === 'web') {
+    if (isWeb) {
       setShowLogoutModal(true);
     } else {
       Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -84,10 +83,10 @@ export default function Dashboard({ navigation }) {
   const markAsAccepted = async (item) => {
     try {
       await axios.patch(`http://192.168.1.5:3000/pickups/${item.id}`, { status: 'Accepted' });
-      setAlert({ visible: true, title: 'Success', message: "Pickup marked as 'Accepted'" });
+      showAlert('Success', "Pickup marked as 'Accepted'");
       fetchPickups();
     } catch {
-      setAlert({ visible: true, title: 'Error', message: 'Failed to update status.' });
+      showAlert('Error', 'Failed to update status.');
     }
   };
 
@@ -107,11 +106,11 @@ export default function Dashboard({ navigation }) {
       <Text style={styles.detail}>📍 Address: {item.address}</Text>
       <Text style={styles.detail}>🔄 Status: {item.status}</Text>
 
-      {item.mapLink ? (
+      {item.mapLink && (
         <Text style={styles.link} onPress={() => Linking.openURL(item.mapLink)}>
           🔗 Open Map
         </Text>
-      ) : null}
+      )}
 
       {item.status === 'Pending' ? (
         <TouchableOpacity style={styles.statusButton} onPress={() => markAsAccepted(item)}>
@@ -146,25 +145,29 @@ export default function Dashboard({ navigation }) {
         />
       </View>
 
-      {/* Alert Modal */}
-      <Modal
-        transparent
-        visible={alert.visible}
-        animationType="fade"
-        onRequestClose={() => setAlert({ ...alert, visible: false })}
-      >
-        <View style={alertStyles.overlay}>
-          <View style={alertStyles.box}>
-            <Text style={alertStyles.title}>{alert.title}</Text>
-            <Text style={alertStyles.msg}>{alert.message}</Text>
-            <Pressable style={alertStyles.btn} onPress={() => setAlert({ ...alert, visible: false })}>
-              <Text style={alertStyles.btnText}>OK</Text>
-            </Pressable>
+      {/* Alert Modal Only for Web */}
+      {isWeb && (
+        <Modal
+          transparent
+          visible={alert.visible}
+          animationType="fade"
+          onRequestClose={() => setAlert({ ...alert, visible: false })}
+        >
+          <View style={alertStyles.overlay}>
+            <View style={alertStyles.box}>
+              <Text style={alertStyles.title}>{alert.title}</Text>
+              <Text style={alertStyles.msg}>{alert.message}</Text>
+              <Pressable
+                style={alertStyles.btn}
+                onPress={() => setAlert({ ...alert, visible: false })}
+              >
+                <Text style={alertStyles.btnText}>OK</Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
+      )}
 
-      {/* Logout Modal for Web */}
       <LogoutModal
         visible={showLogoutModal}
         onConfirm={performLogout}
@@ -177,7 +180,7 @@ export default function Dashboard({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f9f1f0',
   },
   container: {
     flex: 1,
@@ -192,15 +195,15 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#111',
+    color: '#3a2e2e',
   },
   logoutText: {
     fontSize: 16,
-    color: '#dc3545',
+    color: '#cc0000',
     fontWeight: 'bold',
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#fadcd9',
     padding: 20,
     borderRadius: 14,
     marginBottom: 14,
@@ -213,12 +216,12 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#3a2e2e',
     marginBottom: 8,
   },
   detail: {
     fontSize: 15,
-    color: '#555',
+    color: '#3a2e2e',
     marginBottom: 2,
   },
   link: {
@@ -229,10 +232,15 @@ const styles = StyleSheet.create({
   },
   statusButton: {
     marginTop: 12,
-    backgroundColor: '#00796b',
+    backgroundColor: '#f79489',
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
+    shadowColor: '#f79489',
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
   statusButtonText: {
     color: '#fff',
@@ -242,12 +250,12 @@ const styles = StyleSheet.create({
   infoText: {
     marginTop: 10,
     fontStyle: 'italic',
-    color: '#777',
+    color: '#7a6e6e',
     fontSize: 14,
   },
   empty: {
     fontSize: 16,
-    color: '#777',
+    color: '#7a6e6e',
     textAlign: 'center',
     marginTop: height * 0.3,
   },
@@ -282,6 +290,7 @@ const alertStyles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: '#3a2e2e',
   },
   msg: {
     fontSize: 16,
@@ -290,7 +299,7 @@ const alertStyles = StyleSheet.create({
     textAlign: 'center',
   },
   btn: {
-    backgroundColor: '#dc3545',
+    backgroundColor: '#f79489',
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 8,

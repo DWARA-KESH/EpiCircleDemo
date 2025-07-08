@@ -190,7 +190,7 @@ export default function Dashboard({ navigation }) {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f9f1f0', // Light Cream
   },
   innerContainer: {
     flex: 1,
@@ -208,18 +208,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 16,
     textAlign: 'center',
-    color: '#333',
-    paddingBottom: '20px'
+    color: '#3a2e2e',
   },
   subHeading: {
     fontSize: 20,
     fontWeight: '600',
     marginVertical: 20,
-    color: '#0077b6',
+    color: '#f8afa6',
     textAlign: 'center',
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fadcd9', // Rose Quartz
     padding: 16,
     borderRadius: 14,
     marginBottom: 14,
@@ -233,15 +232,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 6,
-    color: '#0a0a0a',
+    color: '#3a2e2e',
   },
   detail: {
     fontSize: 14,
-    color: '#444',
+    color: '#555',
     marginBottom: 2,
   },
   button: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#f8afa6', // Dusty Rose
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 10,
@@ -278,10 +277,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: '#3a2e2e',
   },
   modalMessage: {
     fontSize: 16,
-    color: '#333',
+    color: '#555',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   cancelBtn: {
-    backgroundColor: '#6c757d',
+    backgroundColor: '#f8afa6',
     paddingVertical: 10,
     borderRadius: 8,
     flex: 1,
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   confirmBtn: {
-    backgroundColor: '#dc3545',
+    backgroundColor: '#f79489', // Coral
     paddingVertical: 10,
     borderRadius: 8,
     flex: 1,
