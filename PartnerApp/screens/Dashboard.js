@@ -19,7 +19,7 @@ import { PartnerContext } from '../context/PartnerContext';
 
 const { height } = Dimensions.get('window');
 
-// Custom alert/modal for logout on web
+// Custom logout modal for web
 function LogoutModal({ visible, onConfirm, onCancel }) {
   return (
     <Modal transparent visible={visible} animationType="fade">
@@ -60,14 +60,14 @@ export default function Dashboard({ navigation }) {
   const performLogout = async () => {
     await logout();
 
-    if (Platform.OS === 'web') {
-      window.location.reload(); // or replace with `/` if needed
-    } else {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Login' }],
-      });
-    }
+    // if (Platform.OS === 'web') {
+    //   window.location.replace('/');
+    // } else {
+    //   navigation.reset({
+    //     index: 0,
+    //     routes: [{ name: 'Login' }],
+    //   });
+    // }
   };
 
   const confirmLogout = () => {
@@ -81,7 +81,7 @@ export default function Dashboard({ navigation }) {
     }
   };
 
-  const markAsAccepted = async item => {
+  const markAsAccepted = async (item) => {
     try {
       await axios.patch(`http://192.168.1.5:3000/pickups/${item.id}`, { status: 'Accepted' });
       setAlert({ visible: true, title: 'Success', message: "Pickup marked as 'Accepted'" });
@@ -93,8 +93,8 @@ export default function Dashboard({ navigation }) {
 
   useEffect(() => {
     fetchPickups();
-    const id = setInterval(fetchPickups, 3000);
-    return () => clearInterval(id);
+    const intervalId = setInterval(fetchPickups, 3000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const renderItem = ({ item }) => (
@@ -138,7 +138,7 @@ export default function Dashboard({ navigation }) {
 
         <FlatList
           data={pickups}
-          keyExtractor={item => item.id?.toString()}
+          keyExtractor={(item) => item.id?.toString()}
           renderItem={renderItem}
           contentContainerStyle={pickups.length === 0 && styles.centerEmpty}
           ListEmptyComponent={<Text style={styles.empty}>No pickups available.</Text>}

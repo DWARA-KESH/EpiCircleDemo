@@ -6,14 +6,17 @@ import {
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
-  Platform
+  Platform,
 } from 'react-native';
 import { PartnerContext } from '../context/PartnerContext';
+import { useNavigation } from '@react-navigation/native';
 
-export default function PartnerLoginScreen({ navigation }) {
+export default function PartnerLoginScreen() {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
-  const { login } = useContext(PartnerContext);
+  const { initiateLogin } = useContext(PartnerContext);
+  const navigation = useNavigation();
+
 
   const handleLogin = () => {
     if (phone.length !== 10) {
@@ -22,8 +25,8 @@ export default function PartnerLoginScreen({ navigation }) {
     }
 
     setError('');
-    login(phone);
-    navigation.navigate('OTP');
+    initiateLogin(); // simplified: no need to store phone number
+    navigation.navigate('OTP')
   };
 
   return (
@@ -42,8 +45,8 @@ export default function PartnerLoginScreen({ navigation }) {
             keyboardType="phone-pad"
             value={phone}
             onChangeText={(text) => {
-              const numericText = text.replace(/[^0-9]/g, '');
-              setPhone(numericText);
+              const numeric = text.replace(/[^0-9]/g, '');
+              setPhone(numeric);
               setError('');
             }}
             maxLength={10}
@@ -89,13 +92,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 10
+    marginBottom: 10,
   },
   subtitle: {
     fontSize: 15,
     color: '#555',
     textAlign: 'center',
-    marginBottom: 20
+    marginBottom: 20,
   },
   input: {
     borderWidth: 1,
@@ -103,23 +106,23 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     fontSize: 16,
-    marginBottom: 10
+    marginBottom: 10,
   },
   errorText: {
     color: '#dc3545',
     fontSize: 14,
     textAlign: 'center',
-    marginBottom: 10
+    marginBottom: 10,
   },
   button: {
     backgroundColor: '#007bff',
     paddingVertical: 14,
     borderRadius: 10,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16
-  }
+    fontSize: 16,
+  },
 });

@@ -11,27 +11,31 @@ import { ActivityIndicator, View } from 'react-native';
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-  const { partnerPhone, loading } = useContext(PartnerContext);
+  const { isVerified, loading } = useContext(PartnerContext);
 
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#007bff" />
       </View>
     );
   }
-
+  console.log('Navigator:', { isVerified, loading });
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {partnerPhone ? (
+      <Stack.Navigator>
+        {isVerified ? (
           <>
-            <Stack.Screen name="Dashboard" component={Dashboard} />
-            <Stack.Screen name="PickupDetails" component={PickupDetails} />
+            <Stack.Screen name="Dashboard" component={Dashboard} options={{ headerShown: false, gestureEnabled: false }}/>
+            <Stack.Screen
+              name="PickupDetails"
+              component={PickupDetails}
+              options={{ headerShown: true }}
+            />
           </>
         ) : (
           <>
-            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} options={{ headerBackVisible: false, gestureEnabled: false }}/>
             <Stack.Screen name="OTP" component={OTPScreen} />
           </>
         )}

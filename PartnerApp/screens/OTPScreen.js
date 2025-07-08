@@ -6,15 +6,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
-  Platform
+  Platform,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PartnerContext } from '../context/PartnerContext';
 
-export default function OTPScreen({ navigation }) {
+export default function OTPScreen() {
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
-  const { partnerPhone } = useContext(PartnerContext);
+  const { verifyOtp } = useContext(PartnerContext); // ✅ correct function name
 
   const handleVerify = async () => {
     if (otp !== '123456') {
@@ -23,11 +22,9 @@ export default function OTPScreen({ navigation }) {
     }
 
     try {
-      await AsyncStorage.setItem('partnerLoggedIn', 'true');
-      await AsyncStorage.setItem('partnerPhone', partnerPhone);
-      navigation.replace('Dashboard');
+      await verifyOtp(); // ✅ simplified: just sets isVerified = true
     } catch (err) {
-      setError('Error saving session. Please try again.');
+      setError('Error verifying OTP. Please try again.');
     }
   };
 
@@ -40,7 +37,7 @@ export default function OTPScreen({ navigation }) {
         <View style={styles.card}>
           <Text style={styles.title}>OTP Verification</Text>
           <Text style={styles.subtitle}>
-            Enter the 6-digit OTP sent to {partnerPhone}
+            Enter the 6-digit OTP sent to your phone number
           </Text>
 
           <TextInput
@@ -49,9 +46,9 @@ export default function OTPScreen({ navigation }) {
             maxLength={6}
             value={otp}
             onChangeText={(text) => {
-              setError('');
               const numeric = text.replace(/[^0-9]/g, '');
               setOtp(numeric);
+              setError('');
             }}
             returnKeyType="done"
             onSubmitEditing={handleVerify}
