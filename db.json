@@ -232,7 +232,7 @@
       "address": "Eee",
       "mapLink": "",
       "pickupCode": "422476",
-      "status": "Pending"
+      "status": "Accepted"
     },
     {
       "id": "1751868455209",
@@ -243,7 +243,7 @@
       "address": "Fhvh",
       "mapLink": "",
       "pickupCode": "109805",
-      "status": "Pending"
+      "status": "Accepted"
     },
     {
       "id": "1751869273756",
@@ -253,8 +253,8 @@
       "timeSlot": "3–4 PM",
       "address": "We",
       "mapLink": "",
-      "pickupCode": "653737",
-      "status": "Pending"
+      "pickupCode": "825967",
+      "status": "Accepted"
     },
     {
       "id": "1751869584524",
@@ -264,8 +264,8 @@
       "timeSlot": "12–1 PM",
       "address": "Sddf",
       "mapLink": "",
-      "pickupCode": "557674",
-      "status": "Pending"
+      "pickupCode": "762871",
+      "status": "In-Process"
     },
     {
       "id": "1751871608026",
@@ -276,7 +276,7 @@
       "address": "Wese",
       "mapLink": "",
       "pickupCode": "653298",
-      "status": "Pending"
+      "status": "Accepted"
     },
     {
       "id": "1751886225121",
@@ -286,8 +286,16 @@
       "timeSlot": "12–1 PM",
       "address": "asd",
       "mapLink": "",
-      "pickupCode": "909595",
-      "status": "Pending"
+      "pickupCode": "271902",
+      "status": "Completed",
+      "items": [
+        {
+          "name": "Vgg",
+          "qty": 2,
+          "price": 22
+        }
+      ],
+      "totalAmount": 44
     },
     {
       "id": "1751892043576",
@@ -298,7 +306,15 @@
       "address": "asd",
       "mapLink": "",
       "pickupCode": "173687",
-      "status": "Pending"
+      "status": "Completed",
+      "items": [
+        {
+          "name": " Vhg",
+          "qty": 55,
+          "price": 2
+        }
+      ],
+      "totalAmount": 110
     },
     {
       "id": "1751892503164",
@@ -309,7 +325,15 @@
       "address": "Ahhs",
       "mapLink": "",
       "pickupCode": "987013",
-      "status": "Pending"
+      "status": "Completed",
+      "items": [
+        {
+          "name": "Ab",
+          "qty": 1,
+          "price": 12
+        }
+      ],
+      "totalAmount": 12
     },
     {
       "id": "1751892778920",
@@ -319,8 +343,35 @@
       "timeSlot": "10–11 AM",
       "address": "Se",
       "mapLink": "",
-      "pickupCode": "544687",
-      "status": "Pending"
+      "pickupCode": "808510",
+      "status": "Completed",
+      "items": [
+        {
+          "name": "Va",
+          "qty": 2,
+          "price": 12
+        }
+      ],
+      "totalAmount": 24
+    },
+    {
+      "id": "1751957314230",
+      "phone": "1234567890",
+      "date": "2121-21-21",
+      "displayDate": "2121-21-21",
+      "timeSlot": "3–4 PM",
+      "address": "sdas",
+      "mapLink": "",
+      "pickupCode": "278011",
+      "status": "Completed",
+      "items": [
+        {
+          "name": "Gh",
+          "qty": 88,
+          "price": 2
+        }
+      ],
+      "totalAmount": 176
     }
   ]
 }
