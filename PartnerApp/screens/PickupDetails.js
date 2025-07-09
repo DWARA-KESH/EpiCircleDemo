@@ -1,25 +1,16 @@
+// React & React Native Imports
 import React, { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  FlatList,
-  Alert,
-  Linking,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Platform,
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  Pressable,
+  View, Text, TextInput, StyleSheet, FlatList, Alert, Linking,
+  KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard,
+  Platform, ScrollView, TouchableOpacity, Modal, Pressable,
 } from 'react-native';
 import axios from 'axios';
 
+// Check if the app is running on web platform
 const isWeb = Platform.OS === 'web';
 
+// Custom Modal component for Web-based alerts
 function ModalAlert({ visible, onClose, title, message }) {
   return (
     <Modal transparent visible={visible} animationType="fade">
@@ -39,6 +30,7 @@ function ModalAlert({ visible, onClose, title, message }) {
 export default function PickupDetails({ route }) {
   const { pickup } = route.params;
 
+  // Local state variables
   const [code, setCode] = useState('');
   const [itemName, setItemName] = useState('');
   const [qty, setQty] = useState('');
@@ -49,14 +41,22 @@ export default function PickupDetails({ route }) {
   const [totalAmount, setTotalAmount] = useState(pickup.totalAmount || 0);
   const [modal, setModal] = useState({ visible: false, title: '', message: '' });
 
+  // Show alert based on platform
   const showAlert = (title, message) => {
-    if (isWeb) {
-      setModal({ visible: true, title, message });
-    } else {
-      Alert.alert(title, message);
-    }
+    isWeb
+      ? setModal({ visible: true, title, message })
+      : Alert.alert(title, message);
   };
 
+  // Polling: Refresh pickup status periodically unless already in-process
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (status !== 'In-Process') fetchUpdatedPickup();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [status]);
+
+  // Fetch latest pickup data from server
   const fetchUpdatedPickup = async () => {
     try {
       const res = await axios.get(`http://192.168.1.5:3000/pickups/${pickup.id}`);
@@ -70,15 +70,7 @@ export default function PickupDetails({ route }) {
     }
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (status !== 'In-Process') {
-        fetchUpdatedPickup();
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [status]);
-
+  // Update pickup details on server
   const updatePickup = async (newStatus, extraData = {}) => {
     try {
       await axios.patch(`http://192.168.1.5:3000/pickups/${pickup.id}`, {
@@ -96,14 +88,17 @@ export default function PickupDetails({ route }) {
     }
   };
 
+  // Generate a random 6-digit pickup code
   const generatePickupCode = () =>
     Math.floor(100000 + Math.random() * 900000).toString();
 
+  // Accept pickup request
   const handleAccept = () => {
     const code = generatePickupCode();
     updatePickup('Accepted', { pickupCode: code });
   };
 
+  // Verify pickup code entered by partner
   const handleVerifyCode = () => {
     if (code.trim() === pickupCode) {
       updatePickup('In-Process');
@@ -112,6 +107,7 @@ export default function PickupDetails({ route }) {
     }
   };
 
+  // Add item to current pickup
   const addItem = () => {
     if (!itemName || !qty || !price) {
       showAlert('Missing Fields', 'Enter item name, quantity and price.');
@@ -124,19 +120,20 @@ export default function PickupDetails({ route }) {
       price: parseFloat(price),
     };
 
-    const updatedItems = [...items, newItem];
-    setItems(updatedItems);
+    setItems([...items, newItem]);
     setItemName('');
     setQty('');
     setPrice('');
   };
 
+  // Remove item from pickup
   const removeItem = (index) => {
     const updated = [...items];
     updated.splice(index, 1);
     setItems(updated);
   };
 
+  // Submit all items for approval to customer
   const submitForApproval = () => {
     if (items.length === 0) {
       showAlert('No Items', 'Please add at least one item.');
@@ -147,6 +144,7 @@ export default function PickupDetails({ route }) {
     updatePickup('Pending for Approval', { items, totalAmount: total });
   };
 
+  // Render each item in FlatList
   const renderItem = ({ item, index }) => (
     <View style={styles.itemCard}>
       <View>
@@ -163,6 +161,7 @@ export default function PickupDetails({ route }) {
     </View>
   );
 
+  // Mapping status to respective colors
   const statusColorMap = {
     Pending: '#f59e0b',
     Accepted: '#3b82f6',
@@ -171,6 +170,16 @@ export default function PickupDetails({ route }) {
     Completed: '#22c55e',
   };
 
+  // Format date to DD/MM/YYYY
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const day = (`0${date.getDate()}`).slice(-2);
+    const month = (`0${date.getMonth() + 1}`).slice(-2);
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  // Render entire UI
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -181,15 +190,13 @@ export default function PickupDetails({ route }) {
         <ScrollView contentContainerStyle={styles.container}>
           <Text style={styles.title}>Pickup Details</Text>
 
+          {/* Pickup Info Section */}
           <View style={styles.section}>
-            <Text style={styles.detail}>📅 Pickup Date: {pickup.date || 'N/A'}</Text>
+            <Text style={styles.detail}>📅 Pickup Date: {formatDate(pickup.date)}</Text>
             <Text style={styles.detail}>🕐 Time: {pickup.timeSlot || 'N/A'}</Text>
             <Text style={styles.detail}>📍 Address: {pickup.address || 'N/A'}</Text>
             <Text style={styles.detail}>
-              🔄 Status:{' '}
-              <Text style={{ fontWeight: 'bold', color: statusColorMap[status] || '#000' }}>
-                {status}
-              </Text>
+              🔄 Status: <Text style={{ fontWeight: 'bold', color: statusColorMap[status] || '#000' }}>{status}</Text>
             </Text>
             {pickup.mapLink && (
               <Text style={styles.mapLink} onPress={() => Linking.openURL(pickup.mapLink)}>
@@ -198,16 +205,18 @@ export default function PickupDetails({ route }) {
             )}
           </View>
 
+          {/* Accept Pickup */}
           {status === 'Pending' && (
             <TouchableOpacity style={styles.primaryButton} onPress={handleAccept}>
               <Text style={styles.primaryButtonText}>Accept Pickup</Text>
             </TouchableOpacity>
           )}
 
+          {/* Code Verification */}
           {status === 'Accepted' && (
             <View style={styles.section}>
-              <Text style={styles.codeText}>
-                Pickup Code: <Text style={styles.codeBold}>{pickupCode}</Text>
+              <Text style={styles.detail}>
+                Enter the pickup code shown on the customer’s screen to proceed.
               </Text>
               <TextInput
                 placeholder="Enter Pickup Code"
@@ -217,11 +226,12 @@ export default function PickupDetails({ route }) {
                 keyboardType="numeric"
               />
               <TouchableOpacity style={styles.primaryButton} onPress={handleVerifyCode}>
-                <Text style={styles.primaryButtonText}>Verify Code</Text>
+                <Text style={styles.primaryButtonText}>Verify Pickup Code</Text>
               </TouchableOpacity>
             </View>
           )}
 
+          {/* Add Items */}
           {status === 'In-Process' && (
             <View style={styles.section}>
               <TextInput
@@ -256,6 +266,7 @@ export default function PickupDetails({ route }) {
                 style={{ marginTop: 10 }}
               />
 
+              {/* Submit Items */}
               {items.length > 0 && (
                 <TouchableOpacity style={styles.submitButton} onPress={submitForApproval}>
                   <Text style={styles.submitButtonText}>Submit for Approval</Text>
@@ -264,6 +275,7 @@ export default function PickupDetails({ route }) {
             </View>
           )}
 
+          {/* Summary after submission */}
           {(status === 'Pending for Approval' || status === 'Completed') && (
             <View style={styles.summaryCard}>
               <Text style={styles.subTitle}>Items Added:</Text>
@@ -276,6 +288,7 @@ export default function PickupDetails({ route }) {
             </View>
           )}
 
+          {/* Platform Alert Modal */}
           <ModalAlert
             visible={modal.visible}
             title={modal.title}
@@ -287,6 +300,7 @@ export default function PickupDetails({ route }) {
     </KeyboardAvoidingView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

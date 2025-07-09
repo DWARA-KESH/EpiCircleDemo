@@ -20,6 +20,7 @@ import { PartnerContext } from '../context/PartnerContext';
 const { height } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
+// Logout confirmation modal (used for web)
 function LogoutModal({ visible, onConfirm, onCancel }) {
   return (
     <Modal transparent visible={visible} animationType="fade">
@@ -42,19 +43,21 @@ function LogoutModal({ visible, onConfirm, onCancel }) {
 }
 
 export default function Dashboard({ navigation }) {
+  const { logout } = useContext(PartnerContext);
   const [pickups, setPickups] = useState([]);
   const [alert, setAlert] = useState({ visible: false, title: '', message: '' });
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const { logout } = useContext(PartnerContext);
 
-  const showAlert = (title, message) => {
-    if (isWeb) {
-      setAlert({ visible: true, title, message });
-    } else {
-      Alert.alert(title, message);
-    }
+  // Formats a given date string to DD/MM/YYYY
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const day = (`0${date.getDate()}`).slice(-2);
+    const month = (`0${date.getMonth() + 1}`).slice(-2);
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
+  // Fetch pickup data from the backend and sort by newest first
   const fetchPickups = async () => {
     try {
       const response = await axios.get('http://192.168.1.5:3000/pickups');
@@ -65,10 +68,21 @@ export default function Dashboard({ navigation }) {
     }
   };
 
+  // Platform-aware alert handler (native vs web)
+  const showAlert = (title, message) => {
+    if (isWeb) {
+      setAlert({ visible: true, title, message });
+    } else {
+      Alert.alert(title, message);
+    }
+  };
+
+  // Handle logout logic
   const performLogout = async () => {
     await logout();
   };
 
+  // Show logout confirmation modal or native alert
   const confirmLogout = () => {
     if (isWeb) {
       setShowLogoutModal(true);
@@ -80,6 +94,7 @@ export default function Dashboard({ navigation }) {
     }
   };
 
+  // Update pickup status to "Accepted"
   const markAsAccepted = async (item) => {
     try {
       await axios.patch(`http://192.168.1.5:3000/pickups/${item.id}`, { status: 'Accepted' });
@@ -90,25 +105,27 @@ export default function Dashboard({ navigation }) {
     }
   };
 
+  // Load pickups initially and set up polling
   useEffect(() => {
     fetchPickups();
     const intervalId = setInterval(fetchPickups, 3000);
     return () => clearInterval(intervalId);
   }, []);
 
+  // Render each pickup request card
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
       onPress={() => navigation.navigate('PickupDetails', { pickup: item })}
     >
-      <Text style={styles.cardTitle}>📦 Pickup Date: {item.date || 'N/A'}</Text>
-      <Text style={styles.detail}>🕐 Time: {item.timeSlot}</Text>
-      <Text style={styles.detail}>📍 Address: {item.address}</Text>
-      <Text style={styles.detail}>🔄 Status: {item.status}</Text>
+      <Text style={styles.cardTitle}>Pickup Date: {formatDate(item.date)}</Text>
+      <Text style={styles.detail}>Time: {item.timeSlot}</Text>
+      <Text style={styles.detail}>Address: {item.address}</Text>
+      <Text style={styles.detail}>Status: {item.status}</Text>
 
       {item.mapLink && (
         <Text style={styles.link} onPress={() => Linking.openURL(item.mapLink)}>
-          🔗 Open Map
+          Open Map
         </Text>
       )}
 
@@ -117,7 +134,7 @@ export default function Dashboard({ navigation }) {
           <Text style={styles.statusButtonText}>Mark as Accepted</Text>
         </TouchableOpacity>
       ) : (
-        <Text style={styles.infoText}>➡️ Open Pickup Details</Text>
+        <Text style={styles.infoText}>Tap to view more details</Text>
       )}
     </TouchableOpacity>
   );
@@ -145,7 +162,7 @@ export default function Dashboard({ navigation }) {
         />
       </View>
 
-      {/* Alert Modal Only for Web */}
+      {/* Alert Modal for Web */}
       {isWeb && (
         <Modal
           transparent
@@ -168,6 +185,7 @@ export default function Dashboard({ navigation }) {
         </Modal>
       )}
 
+      {/* Logout Modal (Web only) */}
       <LogoutModal
         visible={showLogoutModal}
         onConfirm={performLogout}
@@ -176,6 +194,7 @@ export default function Dashboard({ navigation }) {
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   safeArea: {

@@ -11,10 +11,14 @@ import {
 import { PartnerContext } from '../context/PartnerContext';
 
 export default function OTPScreen() {
+  // State for storing entered OTP and any error message
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
+
+  // Access verifyOtp function from context
   const { verifyOtp } = useContext(PartnerContext);
 
+  // Verifies OTP input; currently hardcoded as "123456"
   const handleVerify = async () => {
     if (otp !== '123456') {
       setError('Invalid OTP. Please enter the correct 6-digit OTP.');
@@ -22,7 +26,7 @@ export default function OTPScreen() {
     }
 
     try {
-      await verifyOtp();
+      await verifyOtp(); // Updates context and AsyncStorage to mark as verified
     } catch (err) {
       setError('Error verifying OTP. Please try again.');
     }
@@ -31,32 +35,36 @@ export default function OTPScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined} // Prevents keyboard from overlapping content
     >
       <View style={styles.innerContainer}>
         <View style={styles.card}>
+          {/* Header */}
           <Text style={styles.title}>OTP Verification</Text>
           <Text style={styles.subtitle}>
             Enter the 6-digit OTP sent to your phone number
           </Text>
 
+          {/* OTP Input Field */}
           <TextInput
             style={styles.input}
             keyboardType="number-pad"
             maxLength={6}
             value={otp}
             onChangeText={(text) => {
-              const numeric = text.replace(/[^0-9]/g, '');
+              const numeric = text.replace(/[^0-9]/g, ''); // Only numeric input allowed
               setOtp(numeric);
               setError('');
             }}
             returnKeyType="done"
-            onSubmitEditing={handleVerify}
+            onSubmitEditing={handleVerify} // Submit when pressing enter/done on keyboard
             textAlign="center"
           />
 
+          {/* Error message */}
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
+          {/* Submit Button */}
           <TouchableOpacity style={styles.button} onPress={handleVerify}>
             <Text style={styles.buttonText}>Verify OTP</Text>
           </TouchableOpacity>
@@ -65,6 +73,8 @@ export default function OTPScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {

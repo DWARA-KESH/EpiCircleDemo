@@ -1,18 +1,21 @@
 import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ActivityIndicator, View } from 'react-native';
+
 import LoginScreen from '../screens/LoginScreen';
 import OTPScreen from '../screens/OTPScreen';
 import Dashboard from '../screens/Dashboard';
 import PickupDetails from '../screens/PickupDetails';
+
 import { PartnerContext } from '../context/PartnerContext';
-import { ActivityIndicator, View } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
   const { isVerified, loading } = useContext(PartnerContext);
 
+  // Show loader while reading session from storage
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -21,6 +24,7 @@ export default function AppNavigator() {
     );
   }
 
+  // Debugging session state (optional)
   console.log('Navigator:', { isVerified, loading });
 
   return (
@@ -30,18 +34,19 @@ export default function AppNavigator() {
           headerStyle: {
             backgroundColor: '#fadcd9', // Rose Quartz
           },
-          headerTintColor: '#3a2e2e', // Dark text for icons
+          headerTintColor: '#3a2e2e', // Icon & back button color
           headerTitleStyle: {
             fontWeight: 'normal',
             fontSize: 20,
-            color: '#3a2e2e', // Dark text for title
+            color: '#3a2e2e', // Title color
           },
           contentStyle: {
-            backgroundColor: '#f9f1f0', // Light Cream Pink background for screens
+            backgroundColor: '#f9f1f0', // Light Cream Pink screen background
           },
         }}
       >
         {isVerified ? (
+          //  Verified partner: show dashboard flow
           <>
             <Stack.Screen
               name="Dashboard"
@@ -56,11 +61,11 @@ export default function AppNavigator() {
               component={PickupDetails}
               options={{
                 title: 'Pickup Details',
-                headerShown: true,
               }}
             />
           </>
         ) : (
+          //  Not verified: show login + OTP screens
           <>
             <Stack.Screen
               name="Login"

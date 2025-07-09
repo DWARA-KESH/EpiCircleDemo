@@ -16,20 +16,26 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import { UserContext } from '../context/UserContext';
 
-const { height } = Dimensions.get('window');
 
 export default function SchedulePickup({ navigation }) {
   const { userPhone } = useContext(UserContext);
+
+  // Form state
   const [date, setDate] = useState(new Date());
-  const [tempDate, setTempDate] = useState(new Date());
-  const [pickupDateText, setPickupDateText] = useState('');
+  const [tempDate, setTempDate] = useState(new Date()); // Used in iOS modal
+  const [pickupDateText, setPickupDateText] = useState(''); // For web input
   const [showDatePicker, setShowDatePicker] = useState(false);
+
   const [timeSlot, setTimeSlot] = useState('');
   const [address, setAddress] = useState('');
   const [mapLink, setMapLink] = useState('');
+
   const [showTimeSlots, setShowTimeSlots] = useState(false);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
 
+  const timeOptions = ['10–11 AM', '12–1 PM', '3–4 PM'];
+
+  // Show alert dialog based on platform
   const showAlert = (title, message) => {
     if (Platform.OS === 'web') {
       window.alert(`${title}\n${message}`);
@@ -38,9 +44,11 @@ export default function SchedulePickup({ navigation }) {
     }
   };
 
+  // Handle form submission
   const handleSubmit = async () => {
     let formattedDate = '';
 
+    // Format date based on platform
     if (Platform.OS === 'web') {
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!pickupDateText.match(dateRegex)) {
@@ -55,11 +63,13 @@ export default function SchedulePickup({ navigation }) {
       formattedDate = `${year}-${month}-${day}`;
     }
 
+    // Validate required fields
     if (!timeSlot || !address || !formattedDate) {
       showAlert('Missing fields', 'Please fill in all required fields.');
       return;
     }
 
+    // Generate unique 6-digit code
     const pickupCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     const pickup = {
@@ -89,8 +99,6 @@ export default function SchedulePickup({ navigation }) {
     }
   };
 
-  const timeOptions = ['10–11 AM', '12–1 PM', '3–4 PM'];
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -111,9 +119,8 @@ export default function SchedulePickup({ navigation }) {
         <View style={{ width: '100%', maxWidth: 400 }}>
           <Text style={heading}>Schedule Your Pickup</Text>
 
+          {/* Pickup Date Input */}
           <Text style={label}>Pickup Date</Text>
-
-          {/* Date Picker by Platform */}
           {Platform.OS === 'web' ? (
             <TextInput
               value={pickupDateText}
@@ -124,10 +131,7 @@ export default function SchedulePickup({ navigation }) {
             />
           ) : Platform.OS === 'android' ? (
             <>
-              <TouchableOpacity
-                onPress={() => setShowDatePicker(true)}
-                style={inputStyle}
-              >
+              <TouchableOpacity onPress={() => setShowDatePicker(true)} style={inputStyle}>
                 <Text style={{ fontSize: 15, color: '#333' }}>{date.toDateString()}</Text>
               </TouchableOpacity>
               {showDatePicker && (
@@ -136,9 +140,7 @@ export default function SchedulePickup({ navigation }) {
                   mode="date"
                   display="default"
                   onChange={(event, selectedDate) => {
-                    if (selectedDate) {
-                      setDate(selectedDate);
-                    }
+                    if (selectedDate) setDate(selectedDate);
                     setShowDatePicker(false);
                   }}
                 />
@@ -146,6 +148,7 @@ export default function SchedulePickup({ navigation }) {
             </>
           ) : (
             <>
+              {/* iOS Date Modal */}
               <TouchableOpacity
                 onPress={() => {
                   setTempDate(date);
@@ -163,9 +166,7 @@ export default function SchedulePickup({ navigation }) {
                       mode="date"
                       display="spinner"
                       onChange={(event, selectedDate) => {
-                        if (selectedDate) {
-                          setTempDate(selectedDate);
-                        }
+                        if (selectedDate) setTempDate(selectedDate);
                       }}
                       themeVariant="light"
                     />
@@ -184,11 +185,13 @@ export default function SchedulePickup({ navigation }) {
             </>
           )}
 
+          {/* Time Slot Selector */}
           <Text style={label}>Time Slot</Text>
           <TouchableOpacity style={inputStyle} onPress={() => setShowTimeSlots(true)}>
             <Text>{timeSlot || 'Select time slot'}</Text>
           </TouchableOpacity>
 
+          {/* Time Slot Modal */}
           <Modal visible={showTimeSlots} transparent animationType="fade">
             <View style={modalOverlayStyle}>
               <View style={modalContentStyle}>
@@ -200,16 +203,21 @@ export default function SchedulePickup({ navigation }) {
                       setShowTimeSlots(false);
                     }}
                   >
-                    <Text style={{ fontSize: 16, paddingVertical: 10, color: '#f79489' }}>{slot}</Text>
+                    <Text style={{ fontSize: 16, paddingVertical: 10, color: '#f79489' }}>
+                      {slot}
+                    </Text>
                   </TouchableOpacity>
                 ))}
                 <TouchableOpacity onPress={() => setShowTimeSlots(false)}>
-                  <Text style={{ marginTop: 10, color: '#dc3545', fontWeight: 'bold' }}>Cancel</Text>
+                  <Text style={{ marginTop: 10, color: '#dc3545', fontWeight: 'bold' }}>
+                    Cancel
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
           </Modal>
 
+          {/* Address Input */}
           <Text style={label}>Address</Text>
           <TextInput
             style={inputStyle}
@@ -219,6 +227,7 @@ export default function SchedulePickup({ navigation }) {
             placeholderTextColor="#aaa"
           />
 
+          {/* Map Link (Optional) */}
           <Text style={label}>Google Map Link (optional)</Text>
           <TextInput
             style={inputStyle}
@@ -228,6 +237,7 @@ export default function SchedulePickup({ navigation }) {
             placeholderTextColor="#aaa"
           />
 
+          {/* Submit Button */}
           <View style={{ marginTop: 20 }}>
             <Button title="Submit Pickup Request" onPress={handleSubmit} color="#f79489" />
           </View>
@@ -267,64 +277,95 @@ export default function SchedulePickup({ navigation }) {
   );
 }
 
-// 💄 Styles
-const heading = {
-  fontSize: 24,
-  fontWeight: 'bold',
-  textAlign: 'center',
-  marginBottom: 20,
-  color: '#f8afa6',
-};
 
-const label = {
-  marginTop: 15,
-  fontWeight: 'bold',
-  fontSize: 16,
-  color: '#333',
-};
-
-const inputStyle = {
-  borderWidth: 1,
-  borderColor: '#fadcd9',
-  paddingVertical: 12,
-  paddingHorizontal: 14,
-  borderRadius: 12,
-  marginBottom: 12,
-  fontSize: 15,
-  fontWeight: '500',
-  backgroundColor: '#fff',
-  color: '#333',
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.05,
-  shadowRadius: 2,
-  elevation: 2,
-};
-
-const modalOverlayStyle = {
-  flex: 1,
-  backgroundColor: 'rgba(0,0,0,0.4)',
-  justifyContent: 'center',
-  alignItems: 'center',
-};
-
-const modalContentStyle = {
-  backgroundColor: '#fff',
-  borderRadius: 10,
-  padding: 20,
-  width: '80%',
-  alignItems: 'center',
-};
-
-const modalConfirmButtonStyle = {
-  marginTop: 20,
-  paddingVertical: 10,
-  paddingHorizontal: 20,
-  backgroundColor: '#f79489',
-  borderRadius: 6,
-};
-
-const modalConfirmTextStyle = {
-  color: '#fff',
-  fontWeight: 'bold',
+const styles = {
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f9f1f0',
+    paddingBottom: 100,
+    paddingLeft: 20,
+    paddingRight: 20,
+  },
+  inner: {
+    width: '100%',
+    maxWidth: 400,
+  },
+  heading: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#f8afa6',
+  },
+  label: {
+    marginTop: 15,
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: '#333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#fadcd9',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    marginBottom: 12,
+    fontSize: 15,
+    fontWeight: '500',
+    backgroundColor: '#fff',
+    color: '#333',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalButton: {
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#f79489',
+    borderRadius: 6,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  timeOption: {
+    fontSize: 16,
+    paddingVertical: 10,
+    color: '#f79489',
+  },
+  cancelText: {
+    marginTop: 10,
+    color: '#dc3545',
+    fontWeight: 'bold',
+  },
+  successTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#28a745',
+  },
+  successText: {
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
+  },
 };

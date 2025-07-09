@@ -1,12 +1,14 @@
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Create context to share partner session state across the app
 export const PartnerContext = createContext();
 
 export const PartnerProvider = ({ children }) => {
-  const [isVerified, setIsVerified] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isVerified, setIsVerified] = useState(false);  // OTP verification status
+  const [loading, setLoading] = useState(true);         // App loading while checking storage
 
+  // Load saved partner session from AsyncStorage on app startup
   useEffect(() => {
     const loadPartner = async () => {
       try {
@@ -16,36 +18,55 @@ export const PartnerProvider = ({ children }) => {
           setIsVerified(isVerified);
         }
       } catch (error) {
-        console.error('Error loading partner data', error);
+        console.error('Error loading partner data from AsyncStorage:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
+
     loadPartner();
   }, []);
 
+  // Called after login to store unverified state
   const initiateLogin = async () => {
     setIsVerified(false);
-    await AsyncStorage.setItem('partner', JSON.stringify({ isVerified: false }));
+    try {
+      await AsyncStorage.setItem('partner', JSON.stringify({ isVerified: false }));
+    } catch (error) {
+      console.error('Error storing unverified partner session:', error);
+    }
   };
 
+  // Called when OTP is verified successfully
   const verifyOtp = async () => {
     setIsVerified(true);
-    await AsyncStorage.setItem('partner', JSON.stringify({ isVerified: true }));
+    try {
+      await AsyncStorage.setItem('partner', JSON.stringify({ isVerified: true }));
+    } catch (error) {
+      console.error('Error storing verified partner session:', error);
+    }
   };
 
+  // Clear partner session and reset verification
   const logout = async () => {
-    await AsyncStorage.removeItem('partner');
+    try {
+      await AsyncStorage.removeItem('partner');
+    } catch (error) {
+      console.error('Error removing partner session:', error);
+    }
     setIsVerified(false);
   };
 
   return (
-    <PartnerContext.Provider value={{
-      isVerified,
-      loading,
-      initiateLogin,
-      verifyOtp,
-      logout
-    }}>
+    <PartnerContext.Provider
+      value={{
+        isVerified,
+        loading,
+        initiateLogin,
+        verifyOtp,
+        logout
+      }}
+    >
       {children}
     </PartnerContext.Provider>
   );

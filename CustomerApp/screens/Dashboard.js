@@ -1,3 +1,5 @@
+// Dashboard.js
+
 import React, { useEffect, useState, useContext } from 'react';
 import {
   View,
@@ -17,16 +19,22 @@ import axios from 'axios';
 import { useFocusEffect } from '@react-navigation/native';
 import { UserContext } from '../context/UserContext';
 
+// Get window height for scroll layout adjustments
 const { height } = Dimensions.get('window');
 
 export default function Dashboard({ navigation }) {
   const { userPhone, logout } = useContext(UserContext);
+
   const [recentPickups, setRecentPickups] = useState([]);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+  /**
+   * Handles logout action and resets navigation stack
+   * For web, it reloads the root URL
+   */
   const performLogout = async () => {
     await logout();
-  
+
     if (Platform.OS === 'web') {
       window.location.replace('/');
     } else {
@@ -37,6 +45,9 @@ export default function Dashboard({ navigation }) {
     }
   };
 
+  /**
+   * Shows confirmation before logout using modal or Alert
+   */
   const confirmAndLogout = () => {
     if (Platform.OS !== 'web') {
       Alert.alert('Logout?', 'Are you sure you want to logout?', [
@@ -52,11 +63,28 @@ export default function Dashboard({ navigation }) {
     }
   };
 
+  /**
+   * Confirms logout from modal (Web only)
+   */
   const handleModalLogout = () => {
     setShowLogoutModal(false);
     performLogout();
   };
 
+  /**
+   * Formats a date string as DD/MM/YYYY
+   */
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const day = (`0${date.getDate()}`).slice(-2);
+    const month = (`0${date.getMonth() + 1}`).slice(-2);
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  /**
+   * Loads recent pickups every 3 seconds and when screen is focused
+   */
   useEffect(() => {
     let intervalId;
 
@@ -83,6 +111,9 @@ export default function Dashboard({ navigation }) {
     };
   }, [navigation, userPhone]);
 
+  /**
+   * Handles hardware back button and prevents default web back navigation
+   */
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
@@ -108,12 +139,15 @@ export default function Dashboard({ navigation }) {
     }, [])
   );
 
+  /**
+   * Renders a single recent pickup card
+   */
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
       onPress={() => navigation.navigate('OrderHistory', { pickup: item })}
     >
-      <Text style={styles.cardTitle}>Pickup on {item.date}</Text>
+      <Text style={styles.cardTitle}>Pickup on {formatDate(item.date)}</Text>
       <Text style={styles.detail}>🕐 Time: {item.timeSlot}</Text>
       <Text style={styles.detail}>📦 Status: {item.status}</Text>
     </TouchableOpacity>
@@ -124,12 +158,15 @@ export default function Dashboard({ navigation }) {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.innerContainer}>
           <View style={styles.contentWrapper}>
+            {/* Welcome Message */}
             <Text style={styles.welcome}>Welcome, {userPhone || 'Customer'} 👋</Text>
 
+            {/* Schedule New Pickup Button */}
             <Pressable style={styles.button} onPress={() => navigation.navigate('SchedulePickup')}>
               <Text style={styles.buttonText}>Schedule New Pickup</Text>
             </Pressable>
 
+            {/* View Full Order History Button */}
             <Pressable
               style={[styles.button, { backgroundColor: '#6c757d' }]}
               onPress={() => navigation.navigate('OrderHistory')}
@@ -137,6 +174,7 @@ export default function Dashboard({ navigation }) {
               <Text style={styles.buttonText}>View Full Order History</Text>
             </Pressable>
 
+            {/* Logout Button */}
             <Pressable
               style={[styles.button, { backgroundColor: '#dc3545' }]}
               onPress={confirmAndLogout}
@@ -144,6 +182,7 @@ export default function Dashboard({ navigation }) {
               <Text style={styles.buttonText}>Logout</Text>
             </Pressable>
 
+            {/* Recent Pickups Section */}
             <Text style={styles.subHeading}>Recent Pickups</Text>
 
             {recentPickups.length === 0 ? (
@@ -160,7 +199,7 @@ export default function Dashboard({ navigation }) {
         </View>
       </ScrollView>
 
-      {/* Web Logout Modal */}
+      {/* Logout Modal for Web */}
       <Modal
         transparent
         visible={showLogoutModal}
@@ -186,6 +225,7 @@ export default function Dashboard({ navigation }) {
     </>
   );
 }
+
 
 const styles = StyleSheet.create({
   scrollContainer: {

@@ -1,3 +1,5 @@
+// OTPScreen.js
+
 import React, { useState, useContext } from 'react';
 import {
   View,
@@ -7,19 +9,26 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../context/UserContext';
 
-const { height } = Dimensions.get('window');
 
 export default function OTPScreen({ navigation }) {
   const [otp, setOtp] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+
   const { userPhone } = useContext(UserContext);
 
+  /**
+   * Handles OTP verification:
+   * - Checks 6-digit format
+   * - Accepts '123456' as valid
+   * - Stores user as verified in AsyncStorage
+   * - Redirects to Dashboard
+   */
   const verifyOTP = async () => {
     if (otp.length !== 6) {
       setErrorMsg('Please enter a 6-digit OTP.');
@@ -28,7 +37,10 @@ export default function OTPScreen({ navigation }) {
 
     if (otp === '123456') {
       try {
-        await AsyncStorage.setItem('user', JSON.stringify({ phone: userPhone, isVerified: true }));
+        await AsyncStorage.setItem(
+          'user',
+          JSON.stringify({ phone: userPhone, isVerified: true })
+        );
         setErrorMsg('');
         navigation.replace('Dashboard');
       } catch (err) {
@@ -46,15 +58,17 @@ export default function OTPScreen({ navigation }) {
     >
       <View style={styles.innerContainer}>
         <View style={styles.card}>
+          {/* Header Text */}
           <Text style={styles.title}>OTP Verification</Text>
           <Text style={styles.subtitle}>
             Enter the 6-digit OTP sent to {userPhone}
           </Text>
 
+          {/* OTP Input */}
           <TextInput
             style={[styles.input, isFocused && styles.inputFocused]}
+            placeholder="Enter OTP"
             keyboardType="number-pad"
-            placeholder='Enter OTP'
             maxLength={6}
             value={otp}
             onChangeText={(text) => {
@@ -65,10 +79,13 @@ export default function OTPScreen({ navigation }) {
             onSubmitEditing={verifyOTP}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
+            textAlign="center"
           />
 
+          {/* Error Message */}
           {errorMsg !== '' && <Text style={styles.error}>{errorMsg}</Text>}
 
+          {/* Verify Button */}
           <TouchableOpacity style={styles.button} onPress={verifyOTP}>
             <Text style={styles.buttonText}>Verify OTP</Text>
           </TouchableOpacity>
@@ -125,7 +142,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: '#3a2e2e',
     shadowColor: '#000',
-    textAlign:'center',
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 1 },
     shadowRadius: 3,

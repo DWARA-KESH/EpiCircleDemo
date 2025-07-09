@@ -12,50 +12,55 @@ import {
 import { PartnerContext } from '../context/PartnerContext';
 import { useNavigation } from '@react-navigation/native';
 
-const { height } = Dimensions.get('window');
-
+// Partner login screen for entering phone number and proceeding to OTP
 export default function PartnerLoginScreen() {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
+
   const { initiateLogin } = useContext(PartnerContext);
   const navigation = useNavigation();
 
+  // Validates phone number and initiates login session
   const handleLogin = () => {
     if (phone.length !== 10) {
       setError('Please enter a valid 10-digit phone number.');
     } else {
       setError('');
-      initiateLogin();
-      navigation.navigate('OTP');
+      initiateLogin(); // Stores login session as unverified
+      navigation.navigate('OTP'); // Navigate to OTP verification screen
     }
   };
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined} // Prevent keyboard overlap
     >
       <View style={styles.innerContainer}>
         <View style={styles.card}>
+          {/* Header */}
           <Text style={styles.title}>Partner Login</Text>
           <Text style={styles.subtitle}>Enter your phone number to continue</Text>
 
+          {/* Phone number input */}
           <TextInput
             style={styles.input}
             keyboardType="phone-pad"
-            placeholder='Enter Phone Number'
+            placeholder="Enter Phone Number"
             value={phone}
             onChangeText={(text) => {
-              const numericText = text.replace(/[^0-9]/g, '');
+              const numericText = text.replace(/[^0-9]/g, ''); // Allow only numbers
               setPhone(numericText);
             }}
             maxLength={10}
             returnKeyType="done"
-            onSubmitEditing={handleLogin}
+            onSubmitEditing={handleLogin} // Submit on keyboard "done"
           />
 
+          {/* Validation error message */}
           {error !== '' && <Text style={styles.error}>{error}</Text>}
 
+          {/* Submit button */}
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Send OTP</Text>
           </TouchableOpacity>
@@ -64,6 +69,8 @@ export default function PartnerLoginScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {

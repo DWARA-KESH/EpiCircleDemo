@@ -1,3 +1,5 @@
+// LoginScreen.js
+
 import React, { useState, useContext } from 'react';
 import {
   View,
@@ -12,14 +14,23 @@ import {
 import { UserContext } from '../context/UserContext';
 import { useNavigation } from '@react-navigation/native';
 
-const { height } = Dimensions.get('window');
+
 
 export default function LoginScreen() {
+  // Local state to track phone input and error messages
   const [phone, setPhone] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Access context and navigation
   const { setUserPhone } = useContext(UserContext);
   const navigation = useNavigation();
 
+  /**
+   * Handles login button press
+   * - Validates phone number
+   * - Saves phone in context
+   * - Navigates to OTP screen
+   */
   const handleLogin = () => {
     if (phone.length !== 10) {
       setErrorMsg('Please enter a valid 10-digit phone number.');
@@ -37,15 +48,18 @@ export default function LoginScreen() {
     >
       <View style={styles.innerContainer}>
         <View style={styles.card}>
+          {/* Title & Subtitle */}
           <Text style={styles.title}>Login</Text>
           <Text style={styles.subtitle}>Enter your phone number to continue</Text>
 
+          {/* Phone Number Input */}
           <TextInput
             style={styles.input}
             placeholder="Enter phone number"
             keyboardType="phone-pad"
             value={phone}
             onChangeText={(text) => {
+              // Allow only numeric input
               const numericText = text.replace(/[^0-9]/g, '');
               setPhone(numericText);
             }}
@@ -54,8 +68,10 @@ export default function LoginScreen() {
             onSubmitEditing={handleLogin}
           />
 
+          {/* Error Message */}
           {errorMsg !== '' && <Text style={styles.error}>{errorMsg}</Text>}
 
+          {/* Submit Button */}
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Send OTP</Text>
           </TouchableOpacity>
