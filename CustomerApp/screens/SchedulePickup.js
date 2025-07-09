@@ -1,3 +1,5 @@
+// SchedulePickup.js — Fully Commented Version
+
 import React, { useState, useContext } from 'react';
 import {
   View,
@@ -9,20 +11,18 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
-  Dimensions,
   KeyboardAvoidingView,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import { UserContext } from '../context/UserContext';
 
-
 export default function SchedulePickup({ navigation }) {
-  const { userPhone } = useContext(UserContext);
+  const { userPhone } = useContext(UserContext); // Access user's phone from context
 
-  // Form state
+  // State for form values
   const [date, setDate] = useState(new Date());
-  const [tempDate, setTempDate] = useState(new Date()); // Used in iOS modal
+  const [tempDate, setTempDate] = useState(new Date()); // Used for iOS modal
   const [pickupDateText, setPickupDateText] = useState(''); // For web input
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -33,22 +33,20 @@ export default function SchedulePickup({ navigation }) {
   const [showTimeSlots, setShowTimeSlots] = useState(false);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
 
-  const timeOptions = ['10–11 AM', '12–1 PM', '3–4 PM'];
+  const timeOptions = ['10–11 AM', '12–1 PM', '3–4 PM']; // Fixed time slot options
 
-  // Show alert dialog based on platform
+  // Cross-platform alert function
   const showAlert = (title, message) => {
-    if (Platform.OS === 'web') {
-      window.alert(`${title}\n${message}`);
-    } else {
-      Alert.alert(title, message);
-    }
+    Platform.OS === 'web'
+      ? window.alert(`${title}\n${message}`)
+      : Alert.alert(title, message);
   };
 
   // Handle form submission
   const handleSubmit = async () => {
     let formattedDate = '';
 
-    // Format date based on platform
+    // Web: use typed date, else: format native date
     if (Platform.OS === 'web') {
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!pickupDateText.match(dateRegex)) {
@@ -63,17 +61,18 @@ export default function SchedulePickup({ navigation }) {
       formattedDate = `${year}-${month}-${day}`;
     }
 
-    // Validate required fields
+    // Basic validation
     if (!timeSlot || !address || !formattedDate) {
       showAlert('Missing fields', 'Please fill in all required fields.');
       return;
     }
 
-    // Generate unique 6-digit code
+    // Generate 6-digit pickup code
     const pickupCode = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // Pickup object to be sent
     const pickup = {
-      id: Date.now().toString(),
+      id: Date.now().toString(), // Using timestamp as unique ID
       phone: userPhone,
       date: formattedDate,
       displayDate: formattedDate,
@@ -84,6 +83,7 @@ export default function SchedulePickup({ navigation }) {
       status: 'Pending',
     };
 
+    // API call to save pickup
     try {
       await axios.post('http://192.168.1.5:3000/pickups', pickup);
 
@@ -100,38 +100,24 @@ export default function SchedulePickup({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
-    >
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: '#f9f1f0',
-          paddingBottom: 100,
-          paddingLeft: 20,
-          paddingRight: 20,
-        }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={{ width: '100%', maxWidth: 400 }}>
-          <Text style={heading}>Schedule Your Pickup</Text>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+        <View style={styles.inner}>
+          <Text style={styles.heading}>Schedule Your Pickup</Text>
 
-          {/* Pickup Date Input */}
-          <Text style={label}>Pickup Date</Text>
+          {/* Date input */}
+          <Text style={styles.label}>Pickup Date</Text>
           {Platform.OS === 'web' ? (
             <TextInput
               value={pickupDateText}
               onChangeText={setPickupDateText}
               placeholder="YYYY-MM-DD"
               placeholderTextColor="#aaa"
-              style={inputStyle}
+              style={styles.input}
             />
           ) : Platform.OS === 'android' ? (
             <>
-              <TouchableOpacity onPress={() => setShowDatePicker(true)} style={inputStyle}>
+              <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
                 <Text style={{ fontSize: 15, color: '#333' }}>{date.toDateString()}</Text>
               </TouchableOpacity>
               {showDatePicker && (
@@ -148,19 +134,19 @@ export default function SchedulePickup({ navigation }) {
             </>
           ) : (
             <>
-              {/* iOS Date Modal */}
+              {/* iOS Custom Modal */}
               <TouchableOpacity
                 onPress={() => {
                   setTempDate(date);
                   setShowDatePicker(true);
                 }}
-                style={inputStyle}
+                style={styles.input}
               >
                 <Text style={{ fontSize: 15, color: '#333' }}>{date.toDateString()}</Text>
               </TouchableOpacity>
               <Modal visible={showDatePicker} transparent animationType="slide">
-                <View style={modalOverlayStyle}>
-                  <View style={modalContentStyle}>
+                <View style={styles.modalOverlay}>
+                  <View style={styles.modalContent}>
                     <DateTimePicker
                       value={tempDate}
                       mode="date"
@@ -175,9 +161,9 @@ export default function SchedulePickup({ navigation }) {
                         setDate(tempDate);
                         setShowDatePicker(false);
                       }}
-                      style={modalConfirmButtonStyle}
+                      style={styles.modalButton}
                     >
-                      <Text style={modalConfirmTextStyle}>OK</Text>
+                      <Text style={styles.modalButtonText}>OK</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -186,15 +172,15 @@ export default function SchedulePickup({ navigation }) {
           )}
 
           {/* Time Slot Selector */}
-          <Text style={label}>Time Slot</Text>
-          <TouchableOpacity style={inputStyle} onPress={() => setShowTimeSlots(true)}>
+          <Text style={styles.label}>Time Slot</Text>
+          <TouchableOpacity style={styles.input} onPress={() => setShowTimeSlots(true)}>
             <Text>{timeSlot || 'Select time slot'}</Text>
           </TouchableOpacity>
 
           {/* Time Slot Modal */}
           <Modal visible={showTimeSlots} transparent animationType="fade">
-            <View style={modalOverlayStyle}>
-              <View style={modalContentStyle}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
                 {timeOptions.map((slot) => (
                   <TouchableOpacity
                     key={slot}
@@ -203,34 +189,30 @@ export default function SchedulePickup({ navigation }) {
                       setShowTimeSlots(false);
                     }}
                   >
-                    <Text style={{ fontSize: 16, paddingVertical: 10, color: '#f79489' }}>
-                      {slot}
-                    </Text>
+                    <Text style={styles.timeOption}>{slot}</Text>
                   </TouchableOpacity>
                 ))}
                 <TouchableOpacity onPress={() => setShowTimeSlots(false)}>
-                  <Text style={{ marginTop: 10, color: '#dc3545', fontWeight: 'bold' }}>
-                    Cancel
-                  </Text>
+                  <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </Modal>
 
-          {/* Address Input */}
-          <Text style={label}>Address</Text>
+          {/* Address Field */}
+          <Text style={styles.label}>Address</Text>
           <TextInput
-            style={inputStyle}
+            style={styles.input}
             value={address}
             onChangeText={setAddress}
             placeholder="Enter address"
             placeholderTextColor="#aaa"
           />
 
-          {/* Map Link (Optional) */}
-          <Text style={label}>Google Map Link (optional)</Text>
+          {/* Map Link (optional) */}
+          <Text style={styles.label}>Google Map Link (optional)</Text>
           <TextInput
-            style={inputStyle}
+            style={styles.input}
             value={mapLink}
             onChangeText={setMapLink}
             placeholder="Paste Google Maps link"
@@ -252,22 +234,20 @@ export default function SchedulePickup({ navigation }) {
           animationType="fade"
           onRequestClose={() => setSuccessModalVisible(false)}
         >
-          <View style={modalOverlayStyle}>
-            <View style={modalContentStyle}>
-              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: '#28a745' }}>
-                Pickup Scheduled!
-              </Text>
-              <Text style={{ fontSize: 15, textAlign: 'center', marginBottom: 20 }}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.successTitle}>Pickup Scheduled!</Text>
+              <Text style={styles.successText}>
                 Your pickup request has been successfully submitted.
               </Text>
               <TouchableOpacity
-                style={modalConfirmButtonStyle}
+                style={styles.modalButton}
                 onPress={() => {
                   setSuccessModalVisible(false);
                   navigation.navigate('Dashboard');
                 }}
               >
-                <Text style={modalConfirmTextStyle}>OK</Text>
+                <Text style={styles.modalButtonText}>OK</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -277,7 +257,7 @@ export default function SchedulePickup({ navigation }) {
   );
 }
 
-
+// Styles object for consistent UI
 const styles = {
   scrollContainer: {
     flexGrow: 1,
